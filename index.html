@@ -3,231 +3,454 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oussama Lassoued</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<title>Oussama Lassoued — UX/UI Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#060608}
-body{cursor:none;-webkit-font-smoothing:antialiased}
-canvas#main{position:fixed;inset:0;z-index:1}
+html,body{width:100%;height:100%;overflow:hidden;background:#08080c}
+body{cursor:none;-webkit-font-smoothing:antialiased;font-family:'DM Sans',sans-serif}
 
-/* Cursor */
-#cur{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%)}
-#cur-c{width:7px;height:7px;background:#e8e4dc;border-radius:50%;transition:transform .2s,opacity .2s}
-#cur-ring{position:fixed;z-index:9998;width:32px;height:32px;border:1px solid rgba(232,228,220,.2);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .4s,height .4s,border-color .3s}
-body.hov #cur-c{transform:scale(0)}
-body.hov #cur-ring{width:50px;height:50px;border-color:rgba(232,228,220,.4)}
-body.pressing #cur-c{transform:scale(1.6)}
+/* ── CURSOR */
+#cur{position:fixed;z-index:9999;pointer-events:none;transform:translate(-50%,-50%);mix-blend-mode:difference}
+#cur-d{width:8px;height:8px;background:#fff;border-radius:50%;transition:transform .2s,opacity .2s}
+#cur-r{position:fixed;z-index:9998;width:34px;height:34px;border:1px solid rgba(255,255,255,.2);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .4s,height .4s,border-color .3s}
+body.hov #cur-d{transform:scale(0)}
+body.hov #cur-r{width:52px;height:52px;border-color:rgba(255,255,255,.5)}
+body.click-anim #cur-d{transform:scale(2.2);opacity:.6}
 
-/* Preloader */
+/* ── MAIN CANVAS */
+#c{position:fixed;inset:0;z-index:1}
+
+/* ── PRELOADER */
 #pre{
-  position:fixed;inset:0;z-index:9990;background:#000;
+  position:fixed;inset:0;z-index:9000;background:#000;
   display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:0;
 }
-.pre-w{width:min(280px,75vw);padding:28px;border:1px solid rgba(255,255,255,.08)}
-.pre-top{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.25em;color:rgba(255,255,255,.15);text-transform:uppercase;margin-bottom:18px}
-.pre-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,6vw,38px);color:#e8e4dc;letter-spacing:-.03em;line-height:1;margin-bottom:4px;overflow:hidden}
-.pre-line{display:block;transform:translateY(110%)}
-.pre-sub{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:22px}
-.pre-prog{height:1px;background:rgba(255,255,255,.07);margin-bottom:8px}
-.pre-fill{height:100%;background:#e8e4dc;width:0%}
-.pre-foot{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.12em;color:rgba(255,255,255,.18)}
-
-/* Tooltip hints */
-#hint{
-  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
-  z-index:20;font-family:'IBM Plex Mono',monospace;font-size:9px;
-  letter-spacing:.18em;text-transform:uppercase;
-  color:rgba(232,228,220,.2);
-  display:flex;align-items:center;gap:14px;
-  opacity:0;transition:opacity .5s;
-  white-space:nowrap;
+.pre-device{
+  width:min(320px,80vw);
+  background:#0a0c0a;border:2px solid #2a2e2a;
+  padding:0;position:relative;overflow:hidden;
 }
-#hint span{color:rgba(232,228,220,.35)}
-
-/* Button label tooltip */
-#btn-tip{
-  position:fixed;z-index:30;
-  font-family:'IBM Plex Mono',monospace;font-size:9px;
-  letter-spacing:.14em;text-transform:uppercase;
-  background:rgba(10,10,14,.92);
-  color:rgba(232,228,220,.6);
-  padding:6px 12px;
-  border:1px solid rgba(232,228,220,.1);
+.pre-device-top{
+  background:#1a1e1a;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:2px solid #2a2e2a;
+}
+.pre-brand{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.3em;color:#4a6a4a;text-transform:uppercase}
+.pre-battery{display:flex;align-items:center;gap:4px}
+.pre-bat-bar{width:20px;height:9px;border:1px solid #4a6a4a;position:relative}
+.pre-bat-bar::after{content:'';position:absolute;top:1px;left:1px;height:5px;background:#4a6a4a;animation:batfill 3s ease-out forwards}
+.pre-bat-tip{width:3px;height:5px;background:#4a6a4a;margin-left:1px}
+@keyframes batfill{0%{width:0}100%{width:16px}}
+.pre-screen{
+  background:#8aad7a;padding:20px 16px 16px;
+  min-height:180px;position:relative;
+  font-family:'IBM Plex Mono',monospace;
+}
+.pre-screen::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
   pointer-events:none;
-  opacity:0;transition:opacity .2s;
-  white-space:nowrap;
+}
+.pre-title-big{font-size:clamp(18px,5vw,28px);font-weight:500;color:#0a1a0a;letter-spacing:-.01em;margin-bottom:4px}
+.pre-role{font-size:10px;color:#2a4a2a;letter-spacing:.1em;margin-bottom:20px;text-transform:uppercase}
+.pre-progress-label{font-size:9px;color:#2a4a2a;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em}
+.pre-bar-wrap{height:12px;background:#6a8d5a;border:1px solid #4a6a4a;margin-bottom:8px}
+.pre-bar{height:100%;background:#0a1a0a;width:0%;transition:none}
+.pre-status{font-size:8px;color:#2a4a2a;letter-spacing:.1em;display:flex;justify-content:space-between}
+.pre-device-bot{background:#1a1e1a;padding:12px;display:flex;justify-content:center;gap:8px;border-top:2px solid #2a2e2a}
+.pre-nav-btn{width:28px;height:16px;background:#2a2e2a;border:1px solid #3a3e3a}
+
+/* ── NAV */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:500;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 48px;opacity:0;
+}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:rgba(255,255,255,.6);letter-spacing:-.02em;text-decoration:none;cursor:none}
+.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links a{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.22);text-decoration:none;transition:color .3s;cursor:none}
+.nav-links a:hover{color:rgba(255,255,255,.6)}
+
+/* ── HTML OVERLAYS */
+#overlays{position:fixed;inset:0;z-index:10;pointer-events:none}
+
+/* ACT 1: HERO TITLE */
+#act1-title{
+  position:absolute;bottom:12%;left:5%;
+  opacity:0;transform:translateY(20px);
+  pointer-events:none;
+}
+.act1-step{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.act1-step::before{content:'';width:16px;height:1px;background:rgba(255,255,255,.25)}
+.act1-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(36px,5.5vw,72px);line-height:.92;letter-spacing:-.04em;color:#f0ede8;margin-bottom:16px}
+.act1-h em{font-style:italic;font-weight:400;color:rgba(240,237,232,.3)}
+.act1-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,237,232,.28);margin-bottom:32px}
+.act1-scroll{display:flex;align-items:center;gap:12px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.2)}
+.scroll-wheel-icon{width:18px;height:26px;border:1px solid rgba(255,255,255,.2);border-radius:10px;display:flex;align-items:flex-start;justify-content:center;padding-top:4px}
+.scroll-wheel-icon::after{content:'';width:2px;height:6px;background:rgba(255,255,255,.4);border-radius:2px;animation:scrollDot 1.8s ease-in-out infinite}
+@keyframes scrollDot{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(6px);opacity:.2}}
+
+/* ACT 2: SCREEN HINT */
+#act2-hint{
+  position:absolute;bottom:8%;left:50%;transform:translateX(-50%);
+  text-align:center;opacity:0;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.22em;
+  text-transform:uppercase;color:rgba(255,255,255,.2);
+  pointer-events:none;
 }
 
-/* Nav bar top */
-#topbar{
-  position:fixed;top:0;left:0;right:0;z-index:20;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:18px 36px;
+/* ACT 3: BIO OVERLAY (alongside flipped phone) */
+#act3-bio{
+  position:absolute;top:50%;left:5%;transform:translateY(-50%);
+  max-width:360px;opacity:0;pointer-events:none;
+}
+.bio-kicker{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:16px}
+.bio-name{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,3.5vw,40px);letter-spacing:-.03em;color:#f0ede8;line-height:1;margin-bottom:10px}
+.bio-role{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:20px}
+.bio-text{font-size:13px;font-weight:300;color:rgba(255,255,255,.4);line-height:1.85;margin-bottom:20px}
+.bio-text strong{color:rgba(255,255,255,.7);font-weight:400}
+.bio-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.bio-tag{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.1);padding:5px 10px}
+.bio-scroll-hint{display:flex;align-items:center;gap:10px;font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.18);margin-top:24px}
+.bio-line{width:20px;height:1px;background:rgba(255,255,255,.18)}
+
+/* ACT 5: PROJECT VIEW */
+#act5-project{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.92);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+}
+.project-frame{
+  width:min(900px,90vw);background:#0e0e12;
+  border:1px solid rgba(255,255,255,.1);overflow:hidden;
+  position:relative;
+}
+.project-topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.08);
+  background:#0a0a0e;
+}
+.project-title-bar{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.project-close-btn{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);cursor:pointer;border:1px solid rgba(255,255,255,.1);padding:5px 14px;background:transparent;transition:all .3s}
+.project-close-btn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
+.project-content{padding:40px 36px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.project-img{width:100%;aspect-ratio:16/10;object-fit:cover;filter:grayscale(20%)}
+.project-info{}
+.project-num{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:12px}
+.project-name{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(22px,3vw,36px);letter-spacing:-.03em;color:#f0ede8;margin-bottom:10px}
+.project-type{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:18px}
+.project-desc{font-size:13px;font-weight:300;color:rgba(255,255,255,.4);line-height:1.85;margin-bottom:24px}
+.project-btns{display:flex;gap:10px}
+.project-open{display:inline-flex;align-items:center;gap:8px;background:#f0ede8;color:#08080c;padding:11px 24px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;text-decoration:none;cursor:pointer;transition:opacity .3s}
+.project-open:hover{opacity:.85}
+.project-another{display:inline-flex;align-items:center;gap:8px;background:transparent;color:rgba(255,255,255,.35);padding:10px 22px;border:1px solid rgba(255,255,255,.12);font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:all .3s}
+.project-another:hover{border-color:rgba(255,255,255,.3);color:#fff}
+
+/* ACT 6: MESSAGES */
+#act6-msg{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:min(380px,85vw);opacity:0;pointer-events:none;
+}
+.msg-inbox-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:4px}
+.msg-inbox-title{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.3)}
+.msg-inbox-count{font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(255,255,255,.18)}
+.msg-item{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);opacity:0;transform:translateY(10px)}
+.msg-from{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:4px}
+.msg-role{font-family:'IBM Plex Mono',monospace;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:6px}
+.msg-preview{font-size:12px;font-style:italic;color:rgba(255,255,255,.35);line-height:1.6}
+.msg-stars{font-size:9px;color:rgba(255,220,100,.45);margin-top:4px;letter-spacing:2px}
+
+/* ACT 7: CTA */
+#act7-cta{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;text-align:center;padding:0 24px;
+}
+.cta-from{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.cta-from::before,.cta-from::after{content:'';height:1px;width:32px;background:rgba(255,255,255,.15)}
+.cta-h{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(32px,5vw,64px);letter-spacing:-.04em;color:#f0ede8;line-height:.92;margin-bottom:16px}
+.cta-h em{font-style:italic;font-weight:400;color:rgba(240,237,232,.25)}
+.cta-sub{font-size:14px;color:rgba(255,255,255,.3);max-width:380px;line-height:1.8;margin:0 auto 36px}
+/* THE ROCKET BUTTON */
+.cta-rocket-btn{
+  display:inline-flex;align-items:center;gap:12px;
+  background:linear-gradient(135deg,#1a1a28 0%,#2a2a3e 100%);
+  border:1px solid rgba(255,255,255,.15);
+  color:#f0ede8;padding:16px 40px;
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+  text-decoration:none;cursor:pointer;
+  transition:transform .4s cubic-bezier(.25,.46,.45,.94),box-shadow .4s;
+  position:relative;overflow:hidden;pointer-events:auto;
+  clip-path:polygon(12px 0%,100% 0%,100% calc(100% - 12px),calc(100% - 12px) 100%,0% 100%,0% 12px);
+}
+.cta-rocket-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.04),transparent);
+  opacity:0;transition:opacity .4s;
+}
+.cta-rocket-btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.cta-rocket-btn:hover::before{opacity:1}
+.rocket-icon{font-size:16px;animation:rocketFloat 2s ease-in-out infinite}
+@keyframes rocketFloat{0%,100%{transform:translateY(0) rotate(-45deg)}50%{transform:translateY(-4px) rotate(-45deg)}}
+.cta-email{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.12em;color:rgba(255,255,255,.18);text-decoration:none;margin-top:16px;display:block;transition:color .3s;pointer-events:auto;cursor:none}
+.cta-email:hover{color:rgba(255,255,255,.5)}
+
+/* Social links */
+.cta-socials{display:flex;gap:20px;margin-top:32px;pointer-events:auto}
+.cta-social{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.2);text-decoration:none;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:2px;transition:color .3s,border-color .3s;cursor:none}
+.cta-social:hover{color:rgba(255,255,255,.55);border-color:rgba(255,255,255,.2)}
+
+/* Bottom progress */
+#act-progress{
+  position:fixed;bottom:0;left:0;right:0;z-index:20;
+  height:2px;background:rgba(255,255,255,.04);
   opacity:0;
 }
-.tb-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:rgba(232,228,220,.5);letter-spacing:-.02em}
-.tb-links{display:flex;gap:18px;list-style:none}
-.tb-links a{font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(232,228,220,.22);text-decoration:none;cursor:none;transition:color .3s}
-.tb-links a:hover{color:rgba(232,228,220,.6)}
+#act-prog-fill{height:100%;background:rgba(255,255,255,.2);width:0%;transition:width .6s cubic-bezier(.25,.46,.45,.94)}
 
-@media(max-width:700px){
-  .tb-links{display:none}
-  #hint{font-size:8px;gap:8px}
+/* Tooltip */
+#tooltip{
+  position:fixed;z-index:30;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  background:rgba(8,8,12,.9);color:rgba(255,255,255,.5);
+  padding:6px 12px;border:1px solid rgba(255,255,255,.1);
+  pointer-events:none;opacity:0;transition:opacity .2s;white-space:nowrap;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  #nav{padding:16px 24px}
+  .nav-links{display:none}
+  #act1-title{left:4%;bottom:10%;max-width:90%}
+  .project-content{grid-template-columns:1fr}
+  .act1-h{font-size:clamp(30px,10vw,56px)}
 }
 </style>
 </head>
 <body>
 
-<div id="cur"><div id="cur-c"></div></div>
-<div id="cur-ring"></div>
+<div id="cur"><div id="cur-d"></div></div>
+<div id="cur-ring" id="cur-r" style="position:fixed;z-index:9998;width:34px;height:34px;border:1px solid rgba(255,255,255,.2);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .4s,height .4s;left:-100px;top:-100px"></div>
 
-<!-- MAIN 3D CANVAS -->
-<canvas id="main"></canvas>
-
-<!-- TOOLTIP -->
-<div id="btn-tip"></div>
+<div id="tooltip"></div>
 
 <!-- PRELOADER -->
 <div id="pre">
-  <div class="pre-w">
-    <div class="pre-top">// boot sequence</div>
-    <div class="pre-title">
-      <span class="pre-line" id="pl1">Oussama</span>
-      <span class="pre-line" id="pl2">Lassoued.</span>
+  <div class="pre-device">
+    <div class="pre-device-top">
+      <span class="pre-brand">PORTFOLIO OS</span>
+      <div class="pre-battery">
+        <div class="pre-bat-bar"></div>
+        <div class="pre-bat-tip"></div>
+      </div>
     </div>
-    <div class="pre-sub">UX / UI Designer · 2026</div>
-    <div class="pre-prog"><div class="pre-fill" id="pf"></div></div>
-    <div class="pre-foot">
-      <span id="plbl">Powering on...</span>
-      <span id="pnum">000</span>
+    <div class="pre-screen">
+      <div class="pre-title-big" id="pre-name">Oussama<br>Lassoued.</div>
+      <div class="pre-role">UX / UI Designer</div>
+      <div class="pre-progress-label">Loading...</div>
+      <div class="pre-bar-wrap"><div class="pre-bar" id="pbar"></div></div>
+      <div class="pre-status">
+        <span id="pre-lbl">Initializing...</span>
+        <span id="pre-n">0%</span>
+      </div>
+    </div>
+    <div class="pre-device-bot">
+      <div class="pre-nav-btn"></div>
+      <div class="pre-nav-btn"></div>
+      <div class="pre-nav-btn"></div>
     </div>
   </div>
 </div>
 
-<!-- TOP NAV -->
-<div id="topbar">
-  <div class="tb-logo">OL.</div>
-  <ul class="tb-links">
-    <li><a href="#" onclick="navigate('about');return false">About</a></li>
-    <li><a href="#" onclick="navigate('work');return false">Work</a></li>
-    <li><a href="#" onclick="navigate('services');return false">Services</a></li>
-    <li><a href="#" onclick="navigate('reviews');return false">Reviews</a></li>
-    <li><a href="#" onclick="navigate('contact');return false">Contact</a></li>
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">OL.</a>
+  <ul class="nav-links">
+    <li><a href="#" onclick="goAct(2);return false">About</a></li>
+    <li><a href="#" onclick="goAct(3);return false">Projects</a></li>
+    <li><a href="#" onclick="goAct(5);return false">Reviews</a></li>
+    <li><a href="#" onclick="goAct(6);return false">Contact</a></li>
     <li><a href="https://www.linkedin.com/in/oussama-lassoued-in/" target="_blank">LinkedIn ↗</a></li>
     <li><a href="https://drive.google.com/file/d/1MZP5ccqr-adGogf5fUzMLNicwh738o_O/view" target="_blank">Resume ↗</a></li>
   </ul>
-</div>
+</nav>
 
-<!-- HINT -->
-<div id="hint">
-  <span>↑ ↓</span> Navigate &nbsp;|&nbsp; <span>OK</span> Select &nbsp;|&nbsp; <span>Scroll</span> Browse
-</div>
+<!-- MAIN CANVAS -->
+<canvas id="c"></canvas>
+
+<!-- PROGRESS -->
+<div id="act-progress"><div id="act-prog-fill"></div></div>
+
+<!-- OVERLAYS -->
+<div id="overlays">
+
+  <!-- ACT 1: Hero -->
+  <div id="act1-title">
+    <div class="act1-step">Portfolio · 2026</div>
+    <h1 class="act1-h">Design<br>that<br><em>feels right.</em></h1>
+    <div class="act1-sub">UX/UI Designer — Tunis, Tunisia</div>
+    <div class="act1-scroll">
+      <div class="scroll-wheel-icon"></div>
+      Scroll to discover
+    </div>
+  </div>
+
+  <!-- ACT 2: Hint -->
+  <div id="act2-hint">Click screen or use scroll wheel · ACCEPT to confirm</div>
+
+  <!-- ACT 3: Bio alongside flipped phone -->
+  <div id="act3-bio">
+    <div class="bio-kicker">Identity · 01</div>
+    <div class="bio-name">Oussama<br>Lassoued.</div>
+    <div class="bio-role">Junior UX / UI Designer</div>
+    <p class="bio-text">
+      I'm a Multimedia student at <strong>ISAMM</strong>, certified by the <strong>Google UX Design Professional Certificate</strong>. Inspired by the moment a product stops feeling confusing and <strong>starts feeling natural</strong>.
+    </p>
+    <div class="bio-tags">
+      <span class="bio-tag">Google UX Cert</span>
+      <span class="bio-tag">ISAMM 2023+</span>
+      <span class="bio-tag">Figma</span>
+      <span class="bio-tag">Available</span>
+    </div>
+    <div class="bio-scroll-hint">
+      <div class="bio-line"></div>
+      Scroll to see projects
+    </div>
+  </div>
+
+  <!-- ACT 5: Project view -->
+  <div id="act5-project">
+    <div class="project-frame" id="project-frame">
+      <div class="project-topbar">
+        <span class="project-title-bar" id="proj-bar-title">DENT & DO — 2024</span>
+        <div style="display:flex;gap:8px">
+          <button class="project-another" onclick="showNextProject()">View Another →</button>
+          <button class="project-close-btn" onclick="closeProject()">← Back to Phone</button>
+        </div>
+      </div>
+      <div class="project-content">
+        <img class="project-img" id="proj-img" src="https://framerusercontent.com/images/WD6Bse4lEg0oDx4rIQLWF5MDAI.png" alt="Project">
+        <div class="project-info">
+          <div class="project-num" id="proj-num">01 / 02</div>
+          <div class="project-name" id="proj-name">Dent & Do</div>
+          <div class="project-type" id="proj-type">Branding · Visual Identity</div>
+          <p class="project-desc" id="proj-desc">Complete brand identity for a modern dental practice — logo system, color palette, typography, and comprehensive brand guidelines.</p>
+          <div class="project-btns">
+            <a class="project-open" id="proj-link" href="https://www.behance.net/gallery/217565913/Dent-Do-Branding-Visual-Identity" target="_blank">Open on Behance ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACT 6: Messages -->
+  <div id="act6-msg">
+    <div class="msg-inbox-header">
+      <span class="msg-inbox-title">Inbox</span>
+      <span class="msg-inbox-count">4 messages</span>
+    </div>
+    <div class="msg-item" id="msg0">
+      <div class="msg-from">Aymen Mejri</div>
+      <div class="msg-role">Collaborator · ISAMM</div>
+      <div class="msg-preview">"Oussama's attention to detail and user-centric approach is remarkable. Beautiful and deeply functional designs."</div>
+      <div class="msg-stars">★★★★★</div>
+    </div>
+    <div class="msg-item" id="msg1">
+      <div class="msg-from">Sarra Ben Ali</div>
+      <div class="msg-role">Team Lead · University</div>
+      <div class="msg-preview">"Research was incredibly thorough — he uncovered insights we hadn't even considered."</div>
+      <div class="msg-stars">★★★★★</div>
+    </div>
+    <div class="msg-item" id="msg2">
+      <div class="msg-from">Khalil Tounsi</div>
+      <div class="msg-role">Client · Branding Project</div>
+      <div class="msg-preview">"Redesigned our brand with a fresh modern approach. Perfectly captured who we are."</div>
+      <div class="msg-stars">★★★★★</div>
+    </div>
+    <div class="msg-item" id="msg3">
+      <div class="msg-from">Rim Lahmar</div>
+      <div class="msg-role">Design Mentor · ISAMM</div>
+      <div class="msg-preview">"Balanced aesthetics with functionality brilliantly. Every choice rooted in user needs."</div>
+      <div class="msg-stars">★★★★★</div>
+    </div>
+  </div>
+
+  <!-- ACT 7: CTA -->
+  <div id="act7-cta">
+    <div class="cta-from">Let's Create Together</div>
+    <h2 class="cta-h">Ready to build<br>something <em>real?</em></h2>
+    <p class="cta-sub">Whether you're a startup, studio, or company — let's craft digital experiences people love.</p>
+    <button class="cta-rocket-btn" onclick="window.location.href='mailto:work.oussama.lassoued@gmail.com'">
+      <span class="rocket-icon">🚀</span>
+      Start a Project
+    </button>
+    <a href="mailto:work.oussama.lassoued@gmail.com" class="cta-email">work.oussama.lassoued@gmail.com</a>
+    <div class="cta-socials">
+      <a href="https://www.linkedin.com/in/oussama-lassoued-in/" target="_blank" class="cta-social">LinkedIn</a>
+      <a href="https://www.behance.net/oussama-lassoued" target="_blank" class="cta-social">Behance</a>
+      <a href="https://www.instagram.com/" target="_blank" class="cta-social">Instagram</a>
+      <a href="mailto:work.oussama.lassoued@gmail.com" class="cta-social">Email</a>
+    </div>
+  </div>
+
+</div><!-- /overlays -->
 
 <script>
-/* ═══════════════════════════════════
+/* ═══════════════════════════════════════
    CURSOR
-═══════════════════════════════════ */
+═══════════════════════════════════════ */
 const curEl=document.getElementById('cur');
-const curRing=document.getElementById('cur-ring');
+const curRingEl=document.getElementById('cur-r');
 let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
 addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;curEl.style.left=mx+'px';curEl.style.top=my+'px'});
-(function lr(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curRing.style.left=rx+'px';curRing.style.top=ry+'px';requestAnimationFrame(lr)})();
+(function lr(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curRingEl.style.left=rx+'px';curRingEl.style.top=ry+'px';requestAnimationFrame(lr)})();
 
-/* ═══════════════════════════════════
-   SCREEN DATA
-═══════════════════════════════════ */
-const SCREENS={
-  home:{
-    title:'HOME',
-    menu:['About Me','My Projects','Services','Reviews','Contact'],
-    selectedIdx:0
-  },
-  about:{title:'ABOUT ME'},
-  work:{title:'PROJECTS'},
-  services:{title:'SERVICES'},
-  reviews:{title:'REVIEWS'},
-  contact:{title:'CONTACT'}
-};
-
-let currentScreen='home';
-let menuIdx=0;
-let screenAnim=0; // 0=idle,1=transitioning
-
-/* ═══════════════════════════════════
-   THREE.JS SCENE
-═══════════════════════════════════ */
-const canvas=document.getElementById('main');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+/* ═══════════════════════════════════════
+   THREE.JS SETUP
+═══════════════════════════════════════ */
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));
 renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.05;
-renderer.setClearColor(0x060608);
+renderer.toneMappingExposure=1.1;
+renderer.setClearColor(0x08080c);
 
 const scene=new THREE.Scene();
-// Subtle fog
-scene.fog=new THREE.FogExp2(0x060608,.032);
+scene.fog=new THREE.FogExp2(0x06060a,.028);
 
-const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,100);
-camera.position.set(0,.3,10.5);
+const camera=new THREE.PerspectiveCamera(44,innerWidth/innerHeight,.1,100);
+camera.position.set(0,.2,10);
 
-/* ── LIGHTS ── */
-scene.add(new THREE.AmbientLight(0xffffff,.08));
+/* ─ LIGHTS ─ */
+scene.add(new THREE.AmbientLight(0xffffff,.06));
 
-const keyL=new THREE.DirectionalLight(0xffffff,2.2);
-keyL.position.set(5,8,7);
-keyL.castShadow=true;
-keyL.shadow.mapSize.setScalar(2048);
-keyL.shadow.camera.near=.1;keyL.shadow.camera.far=30;
-keyL.shadow.camera.left=-6;keyL.shadow.camera.right=6;
-keyL.shadow.camera.top=8;keyL.shadow.camera.bottom=-8;
-keyL.shadow.radius=6;
-scene.add(keyL);
+const key=new THREE.DirectionalLight(0xffffff,2.8);
+key.position.set(5,9,7);key.castShadow=true;
+key.shadow.mapSize.setScalar(2048);key.shadow.radius=5;
+scene.add(key);
 
-const fillL=new THREE.DirectionalLight(0x8090c0,.22);
-fillL.position.set(-6,-3,5);scene.add(fillL);
+const fill=new THREE.DirectionalLight(0x8090b8,.2);
+fill.position.set(-7,-3,5);scene.add(fill);
 
-const rimL=new THREE.DirectionalLight(0xc0d0ff,1.1);
-rimL.position.set(-3,5,-7);scene.add(rimL);
+const rim=new THREE.DirectionalLight(0xb0c8ff,1.2);
+rim.position.set(-3,6,-8);scene.add(rim);
 
-const rimL2=new THREE.DirectionalLight(0xffffff,.5);
-rimL2.position.set(6,-4,-5);scene.add(rimL2);
+const rim2=new THREE.DirectionalLight(0xffffff,.45);
+rim2.position.set(7,-5,-4);scene.add(rim2);
 
-// Screen glow light
-const screenLight=new THREE.PointLight(0xaaccee,1.2,4.5);
-screenLight.position.set(0,.5,3.5);scene.add(screenLight);
+const screenGlow=new THREE.PointLight(0x88ccaa,.9,5);
+screenGlow.position.set(0,.5,3.5);scene.add(screenGlow);
 
-// Subtle back environment
-const envGeo=new THREE.SphereGeometry(40,32,32);
-const envMat=new THREE.MeshBasicMaterial({color:0x090a10,side:THREE.BackSide});
-scene.add(new THREE.Mesh(envGeo,envMat));
-
-/* ── PHONE GROUP ── */
-const phoneGroup=new THREE.Group();
-scene.add(phoneGroup);
-
-/* ── MATERIALS ── */
-const M={
-  body:      new THREE.MeshStandardMaterial({color:0x1c1c22,roughness:.15,metalness:.82,envMapIntensity:1}),
-  bodyMid:   new THREE.MeshStandardMaterial({color:0x232330,roughness:.18,metalness:.75}),
-  dark:      new THREE.MeshStandardMaterial({color:0x0d0d12,roughness:.1,metalness:.9}),
-  btn:       new THREE.MeshStandardMaterial({color:0x262630,roughness:.2,metalness:.7}),
-  btnDark:   new THREE.MeshStandardMaterial({color:0x101015,roughness:.12,metalness:.88}),
-  accent:    new THREE.MeshStandardMaterial({color:0x35354a,roughness:.3,metalness:.5}),
-  navRing:   new THREE.MeshStandardMaterial({color:0x2a2a38,roughness:.12,metalness:.85}),
-  navCenter: new THREE.MeshStandardMaterial({color:0x151518,roughness:.08,metalness:.95}),
-  keyWhite:  new THREE.MeshStandardMaterial({color:0xd8d4cc,roughness:.25,metalness:.05}),
-  softKey:   new THREE.MeshStandardMaterial({color:0x1e1e28,roughness:.2,metalness:.78}),
-  chrome:    new THREE.MeshStandardMaterial({color:0x606070,roughness:.05,metalness:.98}),
-};
-
-/* ── ROUNDED RECT SHAPE ── */
+/* ═══════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════ */
 function roundRect(w,h,r){
   const s=new THREE.Shape();
   s.moveTo(-w/2+r,-h/2);
@@ -237,900 +460,913 @@ function roundRect(w,h,r){
   s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);
   return s;
 }
-
-function extrude(shape,depth,bevel=0,bSeg=4){
-  return new THREE.ExtrudeGeometry(shape,{
-    depth,bevelEnabled:bevel>0,
-    bevelThickness:bevel,bevelSize:bevel,bevelSegments:bSeg
-  });
+function ext(shape,d,bv=0){
+  return new THREE.ExtrudeGeometry(shape,{depth:d,bevelEnabled:bv>0,bevelThickness:bv,bevelSize:bv,bevelSegments:5});
 }
 
-/* ═══════════════════════════════════
-   PHONE BODY
-═══════════════════════════════════ */
-// Main body — tall rounded rectangle
-const bodyShape=roundRect(2.4,5.2,.35);
-const bodyGeo=extrude(bodyShape,.52,.06,6);
-bodyGeo.center();
+/* ═══════════════════════════════════════
+   MATERIALS
+═══════════════════════════════════════ */
+const M={
+  body:    new THREE.MeshStandardMaterial({color:0x1e1e28,roughness:.14,metalness:.84}),
+  bodyB:   new THREE.MeshStandardMaterial({color:0x28283a,roughness:.18,metalness:.75}),
+  dark:    new THREE.MeshStandardMaterial({color:0x0c0c12,roughness:.08,metalness:.92}),
+  chrome:  new THREE.MeshStandardMaterial({color:0x7a8898,roughness:.04,metalness:.99}),
+  wheel:   new THREE.MeshStandardMaterial({color:0x565870,roughness:.12,metalness:.9}),
+  wheelC:  new THREE.MeshStandardMaterial({color:0x101018,roughness:.06,metalness:.96}),
+  accept:  new THREE.MeshStandardMaterial({color:0x2c2c48,roughness:.22,metalness:.7}),
+  acceptT: new THREE.MeshStandardMaterial({color:0x3a3a60,roughness:.2,metalness:.65}),
+  reset:   new THREE.MeshStandardMaterial({color:0x1a1a24,roughness:.18,metalness:.8}),
+  speaker: new THREE.MeshStandardMaterial({color:0x141420,roughness:.3,metalness:.5}),
+  ridge:   new THREE.MeshStandardMaterial({color:0x303045,roughness:.25,metalness:.6}),
+  glass:   new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.028,roughness:0}),
+};
+
+/* ═══════════════════════════════════════
+   SCREEN CANVAS
+═══════════════════════════════════════ */
+const SC=640,SH=480;
+const sc=document.createElement('canvas');sc.width=SC;sc.height=SH;
+const sctx=sc.getContext('2d');
+const sTex=new THREE.CanvasTexture(sc);
+
+/* ═══════════════════════════════════════
+   BUILD PHONE
+═══════════════════════════════════════ */
+const phoneGroup=new THREE.Group();
+scene.add(phoneGroup);
+
+// ── BODY
+const bodyShape=roundRect(2.55,3.5,.32);
+const bodyGeo=ext(bodyShape,.56,.055);bodyGeo.center();
 const bodyMesh=new THREE.Mesh(bodyGeo,M.body);
 bodyMesh.castShadow=true;bodyMesh.receiveShadow=true;
 phoneGroup.add(bodyMesh);
 
-// Slight chamfer edge highlight
-const chamferGeo=extrude(roundRect(2.38,5.18,.34),.01,.0);
-chamferGeo.center();
-const chamfer=new THREE.Mesh(chamferGeo,M.chrome);
-chamfer.position.z=.25;
-phoneGroup.add(chamfer);
+// Chrome edge ring
+const edgeShape=roundRect(2.55,3.5,.32);
+const edgeHole=new THREE.Path();
+const eH=roundRect(2.45,3.4,.28);eH.getPoints().forEach((p,i)=>{if(i===0)edgeHole.moveTo(p.x,p.y);else edgeHole.lineTo(p.x,p.y)});
+edgeShape.holes.push(edgeHole);
+const edgeGeo=ext(edgeShape,.04,.0);edgeGeo.center();
+const edgeMesh=new THREE.Mesh(edgeGeo,M.chrome);
+edgeMesh.position.z=.27;phoneGroup.add(edgeMesh);
 
-// Top cap (rounded, slightly different color)
-const topCapGeo=extrude(roundRect(2.28,.65,.18),.06,.01,3);
-topCapGeo.center();
-const topCap=new THREE.Mesh(topCapGeo,M.bodyMid);
-topCap.position.set(0,2.2,.26);
-phoneGroup.add(topCap);
+// Top cap panel
+const tcShape=roundRect(2.4,.7,.18);
+const tcGeo=ext(tcShape,.08,.01);tcGeo.center();
+const tcMesh=new THREE.Mesh(tcGeo,M.bodyB);
+tcMesh.position.set(0,1.45,.3);phoneGroup.add(tcMesh);
 
-/* ═══════════════════════════════════
-   EARPIECE
-═══════════════════════════════════ */
-const earGeo=extrude(roundRect(.65,.07,.03),.03,.0);earGeo.center();
-const ear=new THREE.Mesh(earGeo,M.dark);
-ear.position.set(0,2.22,.31);phoneGroup.add(ear);
-// mesh holes
-for(let i=-2;i<=2;i++){
-  const hg=new THREE.CylinderGeometry(.014,.014,.06,6);
-  const h=new THREE.Mesh(hg,M.dark);
-  h.rotation.z=Math.PI/2;h.position.set(i*.1,2.22,.34);phoneGroup.add(h);
-}
-
-/* ═══════════════════════════════════
-   CAMERA HOLE (top)
-═══════════════════════════════════ */
-const camGeo=new THREE.CylinderGeometry(.055,.055,.04,32);
-const camMesh=new THREE.Mesh(camGeo,M.dark);
-camMesh.rotation.x=Math.PI/2;camMesh.position.set(.6,2.26,.32);phoneGroup.add(camMesh);
-// lens ring
-const lensRingGeo=new THREE.TorusGeometry(.055,.01,8,24);
-const lensRing=new THREE.Mesh(lensRingGeo,M.chrome);
-lensRing.position.set(.6,2.26,.33);phoneGroup.add(lensRing);
-
-/* ═══════════════════════════════════
-   SCREEN AREA
-═══════════════════════════════════ */
-// Screen bezel frame
-const bezelShape=roundRect(2.0,1.8,.08);
-const screenHole=new THREE.Path();
-const sw=1.72,sh=1.56,sr=.04;
-screenHole.moveTo(-sw/2+sr,-sh/2);
-screenHole.lineTo(sw/2-sr,-sh/2);screenHole.quadraticCurveTo(sw/2,-sh/2,sw/2,-sh/2+sr);
-screenHole.lineTo(sw/2,sh/2-sr);screenHole.quadraticCurveTo(sw/2,sh/2,sw/2-sr,sh/2);
-screenHole.lineTo(-sw/2+sr,sh/2);screenHole.quadraticCurveTo(-sw/2,sh/2,-sw/2,sh/2-sr);
-screenHole.lineTo(-sw/2,-sh/2+sr);screenHole.quadraticCurveTo(-sw/2,-sh/2,-sw/2+sr,-sh/2);
-bezelShape.holes.push(screenHole);
-const bezelGeo=extrude(bezelShape,.05,.0);bezelGeo.center();
-const bezel=new THREE.Mesh(bezelGeo,M.dark);
-bezel.position.set(0,1.1,.3);phoneGroup.add(bezel);
-
-// Screen canvas
-const SC=512,SH=420;
-const sc=document.createElement('canvas');sc.width=SC;sc.height=SH;
-const ctx=sc.getContext('2d');
-const scTex=new THREE.CanvasTexture(sc);
-
-const screenGeo=new THREE.PlaneGeometry(1.72,1.56);
-const screenMat=new THREE.MeshStandardMaterial({
-  map:scTex,roughness:.02,metalness:0,
-  emissive:new THREE.Color(.04,.06,.12),emissiveIntensity:.8
-});
-const screenMesh=new THREE.Mesh(screenGeo,screenMat);
-screenMesh.position.set(0,1.1,.315);
-phoneGroup.add(screenMesh);
-
-// Glass shine
-const glassGeo=new THREE.PlaneGeometry(1.72,1.56);
-const glassMat=new THREE.MeshStandardMaterial({transparent:true,opacity:.03,roughness:0,metalness:0,color:0xffffff});
-const glassMesh=new THREE.Mesh(glassGeo,glassMat);
-glassMesh.position.set(.15,1.25,.32);glassMesh.rotation.z=.05;phoneGroup.add(glassMesh);
-
-/* ═══════════════════════════════════
-   SEPARATOR LINE
-═══════════════════════════════════ */
-const sepGeo=new THREE.BoxGeometry(2.1,.025,.04);
-const sep=new THREE.Mesh(sepGeo,M.btnDark);sep.position.set(0,.22,.3);phoneGroup.add(sep);
-const sepG2=extrude(roundRect(2.1,.02,.0),.06,.0);sepG2.center();
-const sep2=new THREE.Mesh(sepG2,M.chrome);sep2.position.set(0,.22,.28);phoneGroup.add(sep2);
-
-/* ═══════════════════════════════════
-   NAV DISC — central control
-═══════════════════════════════════ */
-// Outer ring with texture detail
-const outerRingGeo=new THREE.TorusGeometry(.62,.13,32,100);
-const outerRing=new THREE.Mesh(outerRingGeo,M.navRing);
-outerRing.position.set(0,-.38,.29);phoneGroup.add(outerRing);
-
-// Ring grip ridges
-for(let i=0;i<20;i++){
-  const a=i/20*Math.PI*2;
-  const rg=new THREE.BoxGeometry(.025,.06,.02);
-  const rm=new THREE.Mesh(rg,M.accent);
-  rm.position.set(Math.cos(a)*.62,Math.sin(a)*.62+-.38,.32);
-  rm.rotation.z=a;
-  phoneGroup.add(rm);
-}
-
-// Inner disc
-const innerGeo=new THREE.CylinderGeometry(.42,.42,.055,64);
-const innerDisc=new THREE.Mesh(innerGeo,M.btn);
-innerDisc.rotation.x=Math.PI/2;innerDisc.position.set(0,-.38,.29);phoneGroup.add(innerDisc);
-
-// Center OK button — slightly raised
-const okGeo=new THREE.CylinderGeometry(.16,.16,.07,48);
-const okBtn=new THREE.Mesh(okGeo,M.navCenter);
-okBtn.rotation.x=Math.PI/2;okBtn.position.set(0,-.38,.32);
-okBtn.userData={type:'btn',action:'ok',label:'OK — Select'};
-phoneGroup.add(okBtn);
-// OK label
-const okRingGeo=new THREE.TorusGeometry(.155,.008,8,32);
-const okRing=new THREE.Mesh(okRingGeo,M.chrome);
-okRing.position.set(0,-.38,.36);phoneGroup.add(okRing);
-
-/* ── D-PAD DIRECTIONS ── */
-const dPad=[
-  {dir:'up',  pos:[0, .22,0],rot:0,   label:'↑ Previous'},
-  {dir:'down',pos:[0,-.98,0],rot:Math.PI,label:'↓ Next'},
-  {dir:'left',pos:[-.76,-.38,0],rot:-Math.PI/2,label:'← Back'},
-  {dir:'right',pos:[.76,-.38,0],rot:Math.PI/2, label:'→ Forward'},
-];
-const dpMeshes=[];
-dPad.forEach(d=>{
-  const dg=new THREE.BoxGeometry(.18,.22,.04);
-  const dm=new THREE.Mesh(dg,M.accent);
-  dm.position.set(d.pos[0],d.pos[1]+-.38,d.pos[2]+.33);
-  dm.userData={type:'btn',action:d.dir,label:d.label};
-  phoneGroup.add(dm);
-  dpMeshes.push(dm);
-
-  // Arrow indicator
-  const ag=new THREE.ConeGeometry(.04,.07,3);
-  const am=new THREE.Mesh(ag,M.chrome);
-  am.rotation.z=d.rot;
-  am.position.set(d.pos[0],d.pos[1]+-.38,d.pos[2]+.36);
-  phoneGroup.add(am);
-});
-
-/* ── SOFT KEYS (below disc) ── */
-const softKeyData=[
-  {x:-.72,label:'Menu'},
-  {x:.72,label:'Back'},
-];
-const softKeyMeshes=[];
-softKeyData.forEach(d=>{
-  const sg=extrude(roundRect(.48,.17,.05),.05,.01,3);sg.center();
-  const sm=new THREE.Mesh(sg,M.softKey);
-  sm.position.set(d.x,-.98,.29);
-  sm.userData={type:'btn',action:d.label.toLowerCase(),label:d.label};
-  phoneGroup.add(sm);
-  softKeyMeshes.push(sm);
-});
-
-/* ═══════════════════════════════════
-   KEYPAD — 12 keys
-═══════════════════════════════════ */
-const keyLabels=[
-  ['1','ABC','DEF'],
-  ['GHI','JKL','MNO'],
-  ['PQRS','TUV','WXYZ'],
-  ['*','0','#']
-];
-const keyActions=[
-  ['1','2','3'],
-  ['4','5','6'],
-  ['7','8','9'],
-  ['star','0','hash']
-];
-const keyMeshes=[];
-let keyRow=0;
-for(let r=0;r<4;r++){
-  for(let c=0;c<3;c++){
-    const kg=extrude(roundRect(.5,.26,.06),.05,.012,4);kg.center();
-    const km=new THREE.Mesh(kg,M.btn);
-    km.position.set((c-1)*.6,-1.38-r*.35,.285);
-    km.userData={
-      type:'btn',
-      action:'key_'+keyActions[r][c],
-      label:keyActions[r][c]+' · '+keyLabels[r][c],
-      row:r,col:c,origZ:.285
-    };
-    phoneGroup.add(km);
-    keyMeshes.push(km);
-  }
-}
-
-/* ═══════════════════════════════════
-   SIDE BUTTONS
-═══════════════════════════════════ */
-[-1.24,1.24].forEach((x,i)=>{
-  const sg=new THREE.BoxGeometry(.07,.38,.18);
-  const sm=new THREE.Mesh(sg,M.accent);
-  sm.position.set(x,.6,.0);phoneGroup.add(sm);
-  // Rounded cap
-  const cg=new THREE.BoxGeometry(.05,.22,.14);
-  const cm=new THREE.Mesh(cg,M.accent);
-  cm.position.set(x,-.3,.0);phoneGroup.add(cm);
-});
-
-/* ═══════════════════════════════════
-   SPEAKER / DETAILS
-═══════════════════════════════════ */
-// Top speaker
-for(let i=-2;i<=2;i++){
-  const hg=new THREE.CylinderGeometry(.013,.013,.06,6);
-  const hm=new THREE.Mesh(hg,M.btnDark);
-  hm.rotation.x=Math.PI/2;hm.position.set(i*.08,2.28,.31);phoneGroup.add(hm);
-}
-// Bottom speaker grille
+// ── EARPIECE
+const earGeo=ext(roundRect(.8,.065,.03),.04,.0);earGeo.center();
+const earMesh=new THREE.Mesh(earGeo,M.dark);earMesh.position.set(0,1.66,.34);phoneGroup.add(earMesh);
 for(let i=-3;i<=3;i++){
-  const hg=new THREE.CylinderGeometry(.012,.012,.04,6);
-  const hm=new THREE.Mesh(hg,M.btnDark);
-  hm.rotation.x=Math.PI/2;hm.position.set(i*.07,-2.42,.31);phoneGroup.add(hm);
+  const hg=new THREE.CylinderGeometry(.011,.011,.06,6);
+  const hm=new THREE.Mesh(hg,M.dark);
+  hm.rotation.x=Math.PI/2;hm.position.set(i*.09,1.66,.37);phoneGroup.add(hm);
 }
-// Bottom connector port
-const portGeo=extrude(roundRect(.52,.08,.03),.03,.0);portGeo.center();
-const portMesh=new THREE.Mesh(portGeo,M.dark);portMesh.position.set(0,-2.52,.3);phoneGroup.add(portMesh);
+
+// Camera dot
+const camG=new THREE.CylinderGeometry(.05,.05,.04,24);
+const camM=new THREE.Mesh(camG,M.dark);camM.rotation.x=Math.PI/2;camM.position.set(.72,1.72,.34);phoneGroup.add(camM);
+const camRG=new THREE.TorusGeometry(.05,.008,8,24);
+const camRM=new THREE.Mesh(camRG,M.chrome);camRM.position.set(.72,1.72,.36);phoneGroup.add(camRM);
+
+// ── SCREEN BEZEL
+const bezShape=roundRect(2.15,1.72,.1);
+const bezHole=new THREE.Path();
+// Create hole for screen (1.82 × 1.44)
+const bHW=.91,bHH=.72;
+bezHole.moveTo(-bHW,-bHH);bezHole.lineTo(bHW,-bHH);bezHole.lineTo(bHW,bHH);bezHole.lineTo(-bHW,bHH);bezHole.closePath();
+bezShape.holes.push(bezHole);
+const bezGeo=ext(bezShape,.055,.0);bezGeo.center();
+const bezMesh=new THREE.Mesh(bezGeo,M.dark);
+bezMesh.position.set(0,.72,.3);phoneGroup.add(bezMesh);
+
+// Screen plane
+const scrGeo=new THREE.PlaneGeometry(1.82,1.44);
+const scrMat=new THREE.MeshStandardMaterial({
+  map:sTex,roughness:.02,metalness:0,
+  emissive:new THREE.Color(.06,.08,.05),emissiveIntensity:.7
+});
+const scrMesh=new THREE.Mesh(scrGeo,scrMat);
+scrMesh.position.set(0,.72,.325);phoneGroup.add(scrMesh);
+
+// Glass reflection
+const glGeo=new THREE.PlaneGeometry(1.82,1.44);
+const glMesh=new THREE.Mesh(glGeo,M.glass);
+glMesh.position.set(.22,.88,.332);glMesh.rotation.z=.04;phoneGroup.add(glMesh);
+
+// ── DIVIDER
+const divGeo=new THREE.BoxGeometry(2.4,.03,.06);
+const divMesh=new THREE.Mesh(divGeo,M.chrome);divMesh.position.set(0,-.12,.29);phoneGroup.add(divMesh);
+
+// ── SCROLL WHEEL
+// Outer ring
+const orGeo=new THREE.TorusGeometry(.66,.1,24,120);
+const orMesh=new THREE.Mesh(orGeo,M.chrome);orMesh.position.set(-.52,-.82,.3);phoneGroup.add(orMesh);
+
+// Concentric inner rings (like Contra's iPod wheel)
+const ringRadii=[.56,.46,.36,.26];
+ringRadii.forEach((r,i)=>{
+  const rg=new THREE.TorusGeometry(r,.025,16,80);
+  const rm=new THREE.Mesh(rg,i%2===0?M.wheel:M.wheelC);
+  rm.position.set(-.52,-.82,.3);phoneGroup.add(rm);
+});
+
+// Wheel grip notches
+for(let i=0;i<28;i++){
+  const a=i/28*Math.PI*2;
+  const ng=new THREE.BoxGeometry(.018,.055,.025);
+  const nm=new THREE.Mesh(ng,M.ridge);
+  nm.position.set(-.52+Math.cos(a)*.66,-.82+Math.sin(a)*.66,.315);
+  nm.rotation.z=a;phoneGroup.add(nm);
+}
+
+// Wheel disc (flat)
+const wdGeo=new THREE.CylinderGeometry(.55,.55,.04,64);
+const wdMesh=new THREE.Mesh(wdGeo,M.wheel);
+wdMesh.rotation.x=Math.PI/2;wdMesh.position.set(-.52,-.82,.28);phoneGroup.add(wdMesh);
+
+// Center button
+const cbGeo=new THREE.CylinderGeometry(.17,.17,.06,48);
+const cbMesh=new THREE.Mesh(cbGeo,M.wheelC);
+cbMesh.rotation.x=Math.PI/2;cbMesh.position.set(-.52,-.82,.32);
+cbMesh.userData={type:'btn',action:'ok',label:'OK'};
+phoneGroup.add(cbMesh);
+
+// ── SPEAKER GRILLE (right of wheel)
+for(let i=0;i<7;i++){
+  const sg=new THREE.BoxGeometry(.55,.048,.02);
+  const sm=new THREE.Mesh(sg,M.speaker);
+  sm.rotation.z=-.52;sm.position.set(.65,-.5+i*.12,.32);phoneGroup.add(sm);
+}
+// [SPEAKER] label would be text but we skip for perf
+
+// ── ACCEPT BUTTON (pill, right-bottom)
+const accShape=roundRect(.55,.22,.11);
+const accGeo=ext(accShape,.065,.015);accGeo.center();
+const accMesh=new THREE.Mesh(accGeo,M.accept);
+accMesh.position.set(.68,-1.05,.3);
+accMesh.userData={type:'btn',action:'accept',label:'ACCEPT'};
+phoneGroup.add(accMesh);
+
+// Accept top surface (slightly lighter)
+const accTopGeo=ext(roundRect(.53,.2,.1),.01,.0);accTopGeo.center();
+const accTopMesh=new THREE.Mesh(accTopGeo,M.acceptT);
+accTopMesh.position.set(.68,-1.05,.365);phoneGroup.add(accTopMesh);
+
+// ── RESET BUTTON (circle, right-top)
+const rsBtnGeo=new THREE.CylinderGeometry(.16,.16,.065,32);
+const rsBtnMesh=new THREE.Mesh(rsBtnGeo,M.reset);
+rsBtnMesh.rotation.x=Math.PI/2;rsBtnMesh.position.set(.68,-.68,.3);
+rsBtnMesh.userData={type:'btn',action:'reset',label:'RESET'};
+phoneGroup.add(rsBtnMesh);
+
+// Reset top
+const rsTopGeo=new THREE.CylinderGeometry(.14,.14,.01,32);
+const rsTopMesh=new THREE.Mesh(rsTopGeo,M.wheelC);
+rsTopMesh.rotation.x=Math.PI/2;rsTopMesh.position.set(.68,-.68,.365);phoneGroup.add(rsTopMesh);
+
+// ── SIDE BRAND TEXT AREA
+const brandGeo=new THREE.BoxGeometry(.06,.5,.18);
+const brandMesh=new THREE.Mesh(brandGeo,M.accept);
+brandMesh.position.set(-1.3,-.3,0);phoneGroup.add(brandMesh);
+// Brand stripe
+const stripeGeo=new THREE.BoxGeometry(.04,.3,.14);
+const stripeMesh=new THREE.Mesh(stripeGeo,M.acceptT);
+stripeMesh.position.set(-1.32,-.3,0);phoneGroup.add(stripeMesh);
+
+// ── ON/OFF SWITCH
+const sw1Geo=new THREE.BoxGeometry(.07,.35,.18);
+const sw1Mesh=new THREE.Mesh(sw1Geo,M.bodyB);
+sw1Mesh.position.set(-1.3,.6,0);phoneGroup.add(sw1Mesh);
+// Knob
+const knobGeo=new THREE.CylinderGeometry(.055,.055,.1,20);
+const knobMesh=new THREE.Mesh(knobGeo,M.chrome);
+knobMesh.position.set(-1.32,.72,0);phoneGroup.add(knobMesh);
+
+// ── BOTTOM PORT
+const portGeo=ext(roundRect(.55,.08,.03),.04,.0);portGeo.center();
+const portMesh=new THREE.Mesh(portGeo,M.dark);portMesh.position.set(0,-1.78,.31);phoneGroup.add(portMesh);
+// Port pins
 for(let i=-2;i<=2;i++){
-  const pg=new THREE.BoxGeometry(.04,.04,.06);
-  const pm=new THREE.Mesh(pg,M.chrome);pm.position.set(i*.08,-2.52,.3);phoneGroup.add(pm);
+  const pg=new THREE.BoxGeometry(.035,.04,.055);
+  const pm=new THREE.Mesh(pg,M.chrome);pm.position.set(i*.08,-1.78,.31);phoneGroup.add(pm);
 }
 
-/* ═══════════════════════════════════
-   SCREEN DRAWING SYSTEM
-═══════════════════════════════════ */
-// Colors
-const C={
-  bg:      '#06080f',
-  bgCard:  'rgba(15,18,30,.95)',
-  bgSel:   'rgba(200,210,240,.12)',
-  border:  'rgba(200,210,240,.1)',
-  status:  'rgba(200,210,240,.55)',
-  title:   'rgba(220,225,240,.92)',
-  body:    'rgba(180,188,210,.5)',
-  muted:   'rgba(150,158,185,.3)',
-  accent:  'rgba(200,215,255,.75)',
-  white:   '#e8e6f0',
-  dim:     'rgba(150,158,185,.18)',
-};
-
-let slideDir=1; // 1=down, -1=up
-let slideAnim=null;
-let pendingScreen=null;
-let currentDrawn=null;
-
-function fill(color,x,y,w,h){ctx.fillStyle=color;ctx.fillRect(x,y,w,h)}
-function text(t,x,y,font,color,align='left'){
-  ctx.font=font;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(t,x,y);
-  ctx.textAlign='left';
-}
-function roundFill(color,x,y,w,h,r){
-  ctx.fillStyle=color;ctx.beginPath();
-  ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h);
-  ctx.fill();
+// ── BOTTOM SPEAKER
+for(let i=-4;i<=4;i++){
+  const hg=new THREE.CylinderGeometry(.011,.011,.04,6);
+  const hm=new THREE.Mesh(hg,M.dark);hm.rotation.x=Math.PI/2;hm.position.set(i*.07,-1.65,.32);phoneGroup.add(hm);
 }
 
-function drawStatusBar(title,secNum){
-  fill('#0b0e1a',0,0,SC,28);
-  // Left: logo
-  text('OL.',10,19,'bold 10px monospace',C.status);
-  // Center: title
-  text(title,SC/2,19,'9px monospace',C.muted,'center');
-  // Right: battery+signal
-  // Signal bars
-  for(let i=0;i<4;i++){
-    const h=4+i*3;
-    fill(i<3?'rgba(200,210,240,.5)':'rgba(200,210,240,.15)',SC-52+i*7,24-h,5,h);
-  }
-  // Battery
-  ctx.strokeStyle='rgba(200,210,240,.35)';ctx.lineWidth=1;
-  ctx.strokeRect(SC-24,8,16,10);
-  fill('rgba(200,210,240,.5)',SC-23,9,11,8);
-  fill('#0b0e1a',SC-23+6,9,5,8);
-  // Scanlines
-  for(let y=0;y<SH;y+=4){fill('rgba(0,0,0,.04)',0,y,SC,2);}
-}
-
-function drawClock(){
-  const now=new Date();
-  const t=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-  text(t,SC/2-14,19,'bold 9px monospace',C.dim);
-}
-
-/* ── DRAW: HOME ── */
-function drawHome(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('HOME',0);
-
-  // Profile area
-  roundFill('rgba(20,24,38,.8)',8,34,SC-16,68,4);
-  ctx.strokeStyle=C.border;ctx.lineWidth=1;
-  ctx.strokeRect(8,34,SC-16,68);
-
-  // Avatar circle
-  ctx.beginPath();ctx.arc(46,68,24,0,Math.PI*2);
-  ctx.fillStyle='rgba(30,35,55,.9)';ctx.fill();
-  ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.stroke();
-  text('OL',46,73,'bold 12px monospace',C.accent,'center');
-
-  // Name + role
-  text('Oussama Lassoued',82,56,'bold 13px monospace',C.title);
-  text('UX / UI Designer',82,72,'10px monospace',C.body);
-  text('Tunis, Tunisia  ·  Available',82,88,'9px monospace',C.muted);
-
-  // Online dot
-  ctx.beginPath();ctx.arc(SC-20,46,4,0,Math.PI*2);
-  ctx.fillStyle='rgba(80,220,120,.7)';ctx.fill();
-
-  // Menu items
-  const items=['01  About Me','02  Projects','03  Services','04  Reviews','05  Contact'];
-  const icons=['⊙','◈','◇','★','✉'];
-  items.forEach((item,i)=>{
-    const y=116+i*56;
-    const isSel=i===menuIdx;
-
-    if(isSel){
-      roundFill(C.bgSel,8,y-18,SC-16,44,3);
-      ctx.strokeStyle='rgba(200,215,255,.2)';ctx.lineWidth=1;
-      ctx.strokeRect(8,y-18,SC-16,44);
-    }
-    text(icons[i],20,y+6,'12px monospace',isSel?C.accent:C.muted);
-    text(item,44,y+6,'bold 11px monospace',isSel?C.title:C.body);
-    if(isSel){
-      text('→',SC-24,y+6,'10px monospace',C.accent);
-    }
-    if(i<items.length-1){fill(C.dim,44,y+20,SC-52,1);}
-  });
-
-  // Bottom hint
-  text('OK = Open  ·  ↑↓ Navigate',SC/2,SH-8,'8px monospace',C.muted,'center');
-  drawClock();
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW: ABOUT ── */
-function drawAbout(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('ABOUT ME',1);
-
-  // Header
-  text('ABOUT ME',14,48,'bold 14px monospace',C.title);
-  fill(C.dim,14,54,SC-28,1);
-
-  // Bio
-  const lines=[
-    'Oussama Lassoued',
-    'Junior UX/UI Designer',
-    'ISAMM Multimedia · Tunisia',
-    'Google UX Certificate',
-  ];
-  lines.forEach((l,i)=>{
-    text(l,14,76+i*18,i===0?'bold 11px monospace':'10px monospace',i===0?C.title:C.body);
-  });
-
-  fill(C.dim,14,152,SC-28,1);
-
-  // Skills bars
-  text('SKILLS',14,170,'bold 9px monospace',C.accent);
-  const skills=[['Figma & Prototyping',.92],['UX Research',.85],['Visual UI Design',.88],['Design Systems',.78]];
-  skills.forEach(([name,val],i)=>{
-    const y=186+i*34;
-    text(name,14,y,'9px monospace',C.body);
-    text(Math.round(val*100)+'%',SC-14,y,'9px monospace',C.muted,'right');
-    fill('rgba(200,210,240,.06)',14,y+7,SC-28,6);
-    fill('rgba(200,215,255,.55)',14,y+7,(SC-28)*val,6);
-  });
-
-  fill(C.dim,14,326,SC-28,1);
-
-  // Tags
-  text('CERTIFICATIONS',14,342,'bold 9px monospace',C.accent);
-  const tags=['Google UX Cert','ISAMM 2023+','Behance Creator'];
-  tags.forEach((t,i)=>{
-    const tw=ctx.measureText(t).width+16;
-    const tx=14+(i>0?tags.slice(0,i).reduce((a,b)=>a+ctx.measureText(b).width+24,0):0);
-    roundFill('rgba(200,215,255,.08)',tx,352,tw,20,3);
-    ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.strokeRect(tx,352,tw,20);
-    text(t,tx+8,366,'8px monospace',C.body);
-  });
-
-  // Exp
-  fill(C.dim,14,382,SC-28,1);
-  text('EXPERIENCE',14,398,'bold 9px monospace',C.accent);
-  text('2024  Google UX Design Certificate',14,414,'9px monospace',C.body);
-  text('2023  ISAMM Multimedia — Ongoing',14,430,'9px monospace',C.body);
-
-  text('↓ Next  ·  ← Home',SC/2,SH-8,'8px monospace',C.muted,'center');
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW: WORK ── */
-function drawWork(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('PROJECTS',2);
-
-  text('MY PROJECTS',14,48,'bold 14px monospace',C.title);
-  fill(C.dim,14,54,SC-28,1);
-
-  const projects=[
-    {
-      num:'01',year:'2024',
-      name:'Dent & Do',
-      type:'Branding · Visual Identity',
-      desc:'Complete brand identity for a dental practice — logo, color system, typography, guidelines.',
-      url:'behance.net'
-    },
-    {
-      num:'02',year:'2025',
-      name:'Thniya',
-      type:'UX Research · Product Design',
-      desc:'End-to-end UX case study: research, wireframes, hi-fi prototype, usability testing.',
-      url:'behance.net'
-    },
-    {
-      num:'03',year:'2026',
-      name:'Next Project',
-      type:'Work in Progress',
-      desc:'Coming soon...',
-      url:''
-    }
-  ];
-
-  projects.forEach((p,i)=>{
-    const y=66+i*116;
-    roundFill(p.num!=='03'?'rgba(18,22,36,.9)':'rgba(12,14,22,.6)',8,y,SC-16,106,4);
-    ctx.strokeStyle=p.num!=='03'?C.border:'rgba(200,210,240,.04)';
-    ctx.lineWidth=1;ctx.strokeRect(8,y,SC-16,106);
-
-    text(p.num+' — '+p.year,18,y+16,'8px monospace',C.muted);
-    text(p.name,18,y+34,'bold 14px monospace',p.num!=='03'?C.title:'rgba(150,158,185,.35)');
-    text(p.type,18,y+52,'9px monospace',p.num!=='03'?C.accent:'rgba(150,158,185,.2)');
-
-    // Description — wrap text
-    ctx.font='9px monospace';ctx.fillStyle=p.num!=='03'?C.body:'rgba(150,158,185,.2)';
-    const words=p.desc.split(' ');let line='',lx=18,ly=y+68;
-    words.forEach(w=>{
-      const test=line+w+' ';
-      if(ctx.measureText(test).width>SC-36&&line){
-        ctx.fillText(line.trim(),lx,ly);line=w+' ';ly+=14;
-      }else line=test;
-    });
-    if(line)ctx.fillText(line.trim(),lx,ly);
-
-    if(p.url){
-      text('↗ '+p.url,SC-18,y+100,'8px monospace','rgba(200,215,255,.4)','right');
-    }
-  });
-
-  text('↑↓ Browse  ·  OK = Open',SC/2,SH-8,'8px monospace',C.muted,'center');
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW: SERVICES ── */
-function drawServices(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('SERVICES',3);
-
-  text('WHAT I OFFER',14,48,'bold 14px monospace',C.title);
-  fill(C.dim,14,54,SC-28,1);
-
-  const svcs=[
-    {
-      n:'01',icon:'◎',name:'UX Research',
-      tags:['Interviews','Testing','Heuristics','Personas'],
-      desc:'Uncovering user needs through structured research — interviews, usability testing, competitive analysis.'
-    },
-    {
-      n:'02',icon:'✦',name:'UI Design',
-      tags:['Figma','Wireframes','Prototypes','Systems'],
-      desc:'From wireframes to pixel-perfect Figma prototypes, built on solid design systems.'
-    },
-    {
-      n:'03',icon:'⚡',name:'AI-Driven Design',
-      tags:['AI Tools','Generative','Ideation'],
-      desc:'AI to accelerate ideation, generate variants, craft smarter adaptive experiences.'
-    },
-  ];
-
-  svcs.forEach((s,i)=>{
-    const y=66+i*116;
-    roundFill('rgba(16,20,32,.9)',8,y,SC-16,106,4);
-    ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.strokeRect(8,y,SC-16,106);
-
-    text(s.n,18,y+16,'8px monospace',C.muted);
-    text(s.icon,SC-24,y+16,'12px monospace',C.accent,'right');
-    text(s.name,18,y+34,'bold 13px monospace',C.title);
-
-    // Description
-    ctx.font='9px monospace';ctx.fillStyle=C.body;
-    const words=s.desc.split(' ');let line='',lx=18,ly=y+52;
-    words.forEach(w=>{
-      const test=line+w+' ';
-      if(ctx.measureText(test).width>SC-36&&line){ctx.fillText(line.trim(),lx,ly);line=w+' ';ly+=14;}
-      else line=test;
-    });
-    if(line)ctx.fillText(line.trim(),lx,ly);
-
-    // Tags
-    let tx=18;
-    s.tags.forEach(t=>{
-      const tw=ctx.measureText(t).width+10;
-      roundFill('rgba(200,215,255,.06)',tx,y+88,tw,14,2);
-      text(t,tx+5,y+99,'7px monospace','rgba(180,190,220,.45)');
-      tx+=tw+6;
-    });
-  });
-
-  text('↑↓ Scroll  ·  5 = Contact',SC/2,SH-8,'8px monospace',C.muted,'center');
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW: REVIEWS ── */
-function drawReviews(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('REVIEWS',4);
-
-  text('WHAT THEY SAY',14,48,'bold 14px monospace',C.title);
-  fill(C.dim,14,54,SC-28,1);
-
-  const revs=[
-    {stars:5,q:'"Attention to detail and user-centric approach is remarkable. Beautiful and deeply functional designs."',auth:'Aymen Mejri',role:'Collaborator · ISAMM'},
-    {stars:5,q:'"Research was incredibly thorough — he uncovered insights we hadn\'t even considered."',auth:'Sarra Ben Ali',role:'Team Lead · University'},
-    {stars:5,q:'"Redesigned our brand with a fresh modern approach. Perfectly captured who we are."',auth:'Khalil Tounsi',role:'Client · Branding'},
-    {stars:5,q:'"Balanced aesthetics with functionality brilliantly. Every choice rooted in user needs."',auth:'Rim Lahmar',role:'Design Mentor'},
-  ];
-
-  revs.forEach((r,i)=>{
-    const y=64+i*88;
-    roundFill('rgba(14,18,28,.9)',8,y,SC-16,78,3);
-    ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.strokeRect(8,y,SC-16,78);
-
-    text('★'.repeat(r.stars),18,y+16,'10px monospace','rgba(220,200,100,.5)');
-    // Quote — wrap
-    ctx.font='9px monospace';ctx.fillStyle=C.body;
-    ctx.font='italic 9px monospace';
-    const words=r.q.split(' ');let line='',lx=18,ly=y+32;
-    words.forEach(w=>{
-      const test=line+w+' ';
-      if(ctx.measureText(test).width>SC-36&&line){ctx.fillText(line.trim(),lx,ly);line=w+' ';ly+=13;}
-      else line=test;
-    });
-    if(line)ctx.fillText(line.trim(),lx,ly);
-    ctx.font='9px monospace';
-    text('— '+r.auth+' · '+r.role,18,y+70,'8px monospace',C.muted);
-  });
-
-  text('↑↓ Scroll  ·  0 = Home',SC/2,SH-8,'8px monospace',C.muted,'center');
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW: CONTACT ── */
-function drawContact(){
-  fill(C.bg,0,0,SC,SH);
-  drawStatusBar('CONTACT',5);
-
-  text('GET IN TOUCH',14,48,'bold 14px monospace',C.title);
-  fill(C.dim,14,54,SC-28,1);
-
-  // Contact card
-  roundFill('rgba(14,18,28,.9)',8,62,SC-16,120,4);
-  ctx.strokeStyle=C.border;ctx.lineWidth=1;ctx.strokeRect(8,62,SC-16,120);
-
-  text('SEND A MESSAGE',18,82,'bold 9px monospace',C.accent);
-  const contacts=[
-    ['EMAIL','work.oussama.lassoued@gmail.com'],
-    ['LINKEDIN','linkedin.com/in/oussama-lassoued-in'],
-    ['LOCATION','Tunis, Tunisia 🇹🇳'],
-    ['AVAILABILITY','Open · Internship & Freelance'],
-  ];
-  contacts.forEach(([lbl,val],i)=>{
-    text(lbl,18,98+i*20,'bold 8px monospace',C.muted);
-    text(val,90,98+i*20,'9px monospace',C.body);
-    if(i<contacts.length-1)fill(C.dim,18,104+i*20,SC-36,1);
-  });
-
-  fill(C.dim,14,192,SC-28,1);
-
-  // New message form mockup
-  roundFill('rgba(20,25,42,.9)',8,200,SC-16,150,4);
-  ctx.strokeStyle='rgba(200,215,255,.12)';ctx.lineWidth=1;
-  ctx.strokeRect(8,200,SC-16,150);
-
-  text('NEW MESSAGE',18,220,'bold 9px monospace',C.accent);
-  fill(C.dim,18,226,SC-36,1);
-
-  const fields=[
-    ['To:','work.oussama.lassoued@gmail.com'],
-    ['From:','your@email.com'],
-    ['Subject:','Your Project Name'],
-  ];
-  fields.forEach(([lbl,val],i)=>{
-    text(lbl,18,244+i*24,'bold 9px monospace',C.muted);
-    text(val,72,244+i*24,'9px monospace',i===0?'rgba(200,215,255,.5)':C.dim);
-    fill(C.dim,18,250+i*24,SC-36,1);
-  });
-
-  text('MESSAGE:',18,320,'bold 9px monospace',C.muted);
-  roundFill('rgba(200,215,255,.03)',18,328,SC-36,16,2);
-  // Blinking cursor
-  const now=Date.now();
-  if(Math.floor(now/600)%2===0){
-    fill('rgba(200,215,255,.6)',20,330,6,12);
-  }
-
-  // Action hint
-  fill(C.dim,14,360,SC-28,1);
-  text('↗ USE FORM BELOW TO SEND',SC/2,376,'bold 8px monospace',C.accent,'center');
-  roundFill('rgba(200,215,255,.1)',SC/2-80,384,160,28,14);
-  ctx.strokeStyle='rgba(200,215,255,.2)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.roundRect?ctx.roundRect(SC/2-80,384,160,28,14):ctx.rect(SC/2-80,384,160,28);ctx.stroke();
-  text('OPEN CONTACT FORM',SC/2,402,'bold 8px monospace',C.title,'center');
-
-  text('← Back  ·  0 = Home',SC/2,SH-8,'8px monospace',C.muted,'center');
-  scTex.needsUpdate=true;
-}
-
-/* ── DRAW SCREEN DISPATCH ── */
-function drawScreen(name){
-  switch(name){
-    case 'home':     drawHome();break;
-    case 'about':    drawAbout();break;
-    case 'work':     drawWork();break;
-    case 'services': drawServices();break;
-    case 'reviews':  drawReviews();break;
-    case 'contact':  drawContact();break;
-  }
-  currentDrawn=name;
-}
-
-/* ── SCREEN TRANSITION (flash) ── */
-function transitionTo(name,dir=1){
-  if(name===currentScreen) return;
-  currentScreen=name;
-  menuIdx=Math.max(0,['home','about','work','services','reviews','contact'].indexOf(name)-1);
-
-  // Flash white
-  fill('#ffffff',0,0,SC,SH);scTex.needsUpdate=true;
-
-  // Phone reaction tilt
-  gsap.to(phoneGroup.rotation,{
-    x:dir*.06,duration:.12,ease:'power2.in',
-    onComplete:()=>gsap.to(phoneGroup.rotation,{x:0,duration:.5,ease:'elastic.out(1,.6)'})
-  });
-  gsap.to(phoneGroup.position,{
-    z:.12,duration:.12,ease:'power2.in',
-    onComplete:()=>gsap.to(phoneGroup.position,{z:0,duration:.5,ease:'elastic.out(1,.6)'})
-  });
-
-  setTimeout(()=>{ drawScreen(name); },80);
-}
-
-/* ═══════════════════════════════════
-   NAVIGATION LOGIC
-═══════════════════════════════════ */
-const secOrder=['home','about','work','services','reviews','contact'];
-window.navigate=function(name){ transitionTo(name); };
-
-function doAction(action){
-  switch(action){
-    case 'up':
-      if(currentScreen==='home'){
-        menuIdx=Math.max(0,menuIdx-1);drawHome();
-        // Button press anim
-        gsap.to(dpMeshes[0].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      } else {
-        const i=secOrder.indexOf(currentScreen);
-        if(i>0) transitionTo(secOrder[i-1],-1);
-        gsap.to(dpMeshes[0].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      }
-      break;
-    case 'down':
-      if(currentScreen==='home'){
-        menuIdx=Math.min(4,menuIdx+1);drawHome();
-        gsap.to(dpMeshes[1].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      } else {
-        const i=secOrder.indexOf(currentScreen);
-        if(i<secOrder.length-1) transitionTo(secOrder[i+1],1);
-        gsap.to(dpMeshes[1].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      }
-      break;
-    case 'ok':{
-      // Press animation
-      gsap.to(okBtn.position,{z:.28,duration:.08,yoyo:true,repeat:1});
-      if(currentScreen==='home'){
-        const screens=['about','work','services','reviews','contact'];
-        transitionTo(screens[menuIdx],1);
-      } else if(currentScreen==='contact'){
-        window.open('https://formsubmit.co/work.oussama.lassoued@gmail.com','_blank');
-      }
-      break;
-    }
-    case 'menu':
-      transitionTo('home',-1);
-      softKeyMeshes[0]&&gsap.to(softKeyMeshes[0].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      break;
-    case 'back':{
-      const i=secOrder.indexOf(currentScreen);
-      if(i>0) transitionTo(secOrder[i-1],-1);
-      softKeyMeshes[1]&&gsap.to(softKeyMeshes[1].position,{z:.27,duration:.08,yoyo:true,repeat:1});
-      break;
-    }
-    default:
-      if(action.startsWith('key_')){
-        const k=action.replace('key_','');
-        const map={'1':'about','2':'work','3':'services','4':'reviews','5':'contact','0':'home'};
-        if(map[k]) transitionTo(map[k],1);
-        // Press key animation
-        const idx={'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':10}[k];
-        if(idx!==undefined&&keyMeshes[idx]){
-          gsap.to(keyMeshes[idx].position,{z:.255,duration:.08,yoyo:true,repeat:1,ease:'power2.in'});
-        }
-      }
-  }
-}
-
-/* ═══════════════════════════════════
-   RAYCASTER — CLICK DETECTION
-═══════════════════════════════════ */
-const rc=new THREE.Raycaster();
-const mouse=new THREE.Vector2();
-const btnTip=document.getElementById('btn-tip');
-let hovered=null;
-
-function getClickables(){
-  return [...dpMeshes,...softKeyMeshes,...keyMeshes,okBtn];
-}
-
-canvas.style.pointerEvents='auto';
-canvas.addEventListener('mousemove',e=>{
-  mouse.x=(e.clientX/innerWidth)*2-1;
-  mouse.y=-(e.clientY/innerHeight)*2+1;
-  rc.setFromCamera(mouse,camera);
-  const hits=rc.intersectObjects(getClickables());
-  if(hits.length){
-    const ud=hits[0].object.userData;
-    if(ud.label){
-      btnTip.style.left=(e.clientX+14)+'px';
-      btnTip.style.top=(e.clientY-10)+'px';
-      btnTip.textContent=ud.label;
-      btnTip.style.opacity='1';
-      document.body.classList.add('hov');
-      hovered=hits[0].object;
-    }
-  } else {
-    btnTip.style.opacity='0';
-    document.body.classList.remove('hov');
-    hovered=null;
-  }
-});
-
-canvas.addEventListener('click',e=>{
-  mouse.x=(e.clientX/innerWidth)*2-1;
-  mouse.y=-(e.clientY/innerHeight)*2+1;
-  rc.setFromCamera(mouse,camera);
-  const hits=rc.intersectObjects(getClickables());
-  if(hits.length){
-    const ud=hits[0].object.userData;
-    if(ud.action){ doAction(ud.action); document.body.classList.add('pressing'); setTimeout(()=>document.body.classList.remove('pressing'),200); }
-  }
-});
-
-/* ═══════════════════════════════════
-   KEYBOARD
-═══════════════════════════════════ */
-addEventListener('keydown',e=>{
-  const m={'ArrowUp':'up','ArrowDown':'down','ArrowLeft':'back','ArrowRight':'ok',
-    'Enter':'ok','Escape':'menu',
-    '1':'key_1','2':'key_2','3':'key_3','4':'key_4','5':'key_5',
-    '6':'key_6','0':'key_0'};
-  if(m[e.key]) doAction(m[e.key]);
-});
-
-/* ─ Scroll ─ */
-let wheelBuf=0;
-addEventListener('wheel',e=>{
-  wheelBuf+=e.deltaY;
-  if(Math.abs(wheelBuf)>70){doAction(wheelBuf>0?'down':'up');wheelBuf=0;}
-},{passive:true});
-
-/* ═══════════════════════════════════
-   MOUSE PARALLAX
-═══════════════════════════════════ */
-let tRX=0,tRY=0,camX=0,camY=0;
-addEventListener('mousemove',e=>{
-  tRX=-(e.clientY/innerHeight-.5)*.3;
-  tRY=(e.clientX/innerWidth-.5)*.25;
-  camX=(e.clientX/innerWidth-.5)*.4;
-  camY=-(e.clientY/innerHeight-.5)*.25;
-});
-
-/* ═══════════════════════════════════
-   BACKGROUND ELEMENTS
-═══════════════════════════════════ */
-// Subtle particle dust
-const pArr=new Float32Array(1400*3);
-for(let i=0;i<1400*3;i++)pArr[i]=(Math.random()-.5)*28;
+// ── BACK FACE (for bio flip)
+const backCanvas=document.createElement('canvas');backCanvas.width=640;backCanvas.height=800;
+const bctx=backCanvas.getContext('2d');
+const backTex=new THREE.CanvasTexture(backCanvas);
+const backGeo=new THREE.PlaneGeometry(2.3,3.2);
+const backMat=new THREE.MeshStandardMaterial({map:backTex,roughness:.35,metalness:.1});
+const backMesh=new THREE.Mesh(backGeo,backMat);
+backMesh.position.set(0,0,-.31);backMesh.rotation.y=Math.PI;
+backMesh.visible=false;phoneGroup.add(backMesh);
+
+/* ═══════════════════════════════════════
+   CRT MONITOR (for projects)
+═══════════════════════════════════════ */
+const monitorGroup=new THREE.Group();
+monitorGroup.position.set(4,0,-1);
+monitorGroup.visible=false;
+scene.add(monitorGroup);
+
+// Monitor body
+const monBodyGeo=ext(roundRect(2.8,2.4,.25),.65,.04);monBodyGeo.center();
+const monBodyMesh=new THREE.Mesh(monBodyGeo,new THREE.MeshStandardMaterial({color:0x1a1a1a,roughness:.25,metalness:.3}));
+monBodyMesh.castShadow=true;monitorGroup.add(monBodyMesh);
+
+// Monitor screen area
+const monScrGeo=new THREE.PlaneGeometry(2.2,1.75);
+const monScrMat=new THREE.MeshStandardMaterial({color:0x001a00,roughness:.1,emissive:new THREE.Color(0,.04,0),emissiveIntensity:.5});
+const monScrMesh=new THREE.Mesh(monScrGeo,monScrMat);
+monScrMesh.position.set(0,.15,.36);monitorGroup.add(monScrMesh);
+
+// Monitor stand
+const standGeo=new THREE.BoxGeometry(.18,.8,.18);
+const standMesh=new THREE.Mesh(standGeo,new THREE.MeshStandardMaterial({color:0x141414,roughness:.3,metalness:.4}));
+standMesh.position.set(0,-1.8,.0);monitorGroup.add(standMesh);
+const baseGeo=ext(roundRect(.9,.12,.04),.06,.0);baseGeo.center();
+const baseMesh=new THREE.Mesh(baseGeo,new THREE.MeshStandardMaterial({color:0x101010,roughness:.25,metalness:.4}));
+baseMesh.position.set(0,-2.24,.0);monitorGroup.add(baseMesh);
+
+/* ═══════════════════════════════════════
+   CHARGER (for CTA act)
+═══════════════════════════════════════ */
+const chargerGroup=new THREE.Group();
+chargerGroup.position.set(0,-3,-1);
+chargerGroup.visible=false;
+scene.add(chargerGroup);
+
+const charBase=ext(roundRect(2.8,.35,.18),.15,.04);charBase.center();
+const charBaseMesh=new THREE.Mesh(charBase,new THREE.MeshStandardMaterial({color:0x141418,roughness:.2,metalness:.7}));
+chargerGroup.add(charBaseMesh);
+// Charging port
+const cpGeo=ext(roundRect(2.55,.25,.1),.08,.02);cpGeo.center();
+const cpMesh=new THREE.Mesh(cpGeo,new THREE.MeshStandardMaterial({color:0x0a0a0e,roughness:.1,metalness:.9}));
+cpMesh.position.set(0,.3,.0);chargerGroup.add(cpMesh);
+
+/* ═══════════════════════════════════════
+   AMBIENT PARTICLES
+═══════════════════════════════════════ */
+const pArr=new Float32Array(1200*3);
+for(let i=0;i<1200*3;i++)pArr[i]=(Math.random()-.5)*26;
 const pGeo=new THREE.BufferGeometry();pGeo.setAttribute('position',new THREE.BufferAttribute(pArr,3));
 const pField=new THREE.Points(pGeo,new THREE.PointsMaterial({color:0xffffff,size:.006,transparent:true,opacity:.1,sizeAttenuation:true}));
 scene.add(pField);
 
-// Floor reflection
-const floorGeo=new THREE.PlaneGeometry(24,24,1,1);
-const floorMat=new THREE.MeshStandardMaterial({color:0x08080c,roughness:.05,metalness:.8});
-const floor=new THREE.Mesh(floorGeo,floorMat);
-floor.rotation.x=-Math.PI/2;floor.position.y=-3.8;floor.receiveShadow=true;
-scene.add(floor);
+// Floor
+const floorGeo=new THREE.PlaneGeometry(28,28);
+const floorMat=new THREE.MeshStandardMaterial({color:0x080810,roughness:.05,metalness:.7});
+const floorMesh=new THREE.Mesh(floorGeo,floorMat);
+floorMesh.rotation.x=-Math.PI/2;floorMesh.position.y=-3.5;floorMesh.receiveShadow=true;
+scene.add(floorMesh);
 
-// Phone shadow/reflection on floor (ghost)
-const refGeo=new THREE.PlaneGeometry(2.8,5.6);
-const refMat=new THREE.MeshBasicMaterial({color:0x0d0d14,transparent:true,opacity:.35});
-const ref=new THREE.Mesh(refGeo,refMat);
-ref.rotation.x=-Math.PI/2;ref.position.set(0,-3.75,0);
-scene.add(ref);
+/* ═══════════════════════════════════════
+   SCREEN DRAW FUNCTIONS
+═══════════════════════════════════════ */
+function clr(c='#08100a'){sctx.fillStyle=c;sctx.fillRect(0,0,SC,SH)}
 
-/* ═══════════════════════════════════
-   RENDER LOOP
-═══════════════════════════════════ */
-const clock=new THREE.Clock();
-let bootDone=false;
-let frameCount=0;
-
-function drawBootScreen(t){
-  const pct=Math.min(t/2.5,1);
-  fill('#06080f',0,0,SC,SH);
-  // Boot logo
-  text('PORTFOLIO OS',SC/2,140,'bold 20px monospace',`rgba(200,210,240,${Math.min(t,.8)*.9})`,'center');
-  text('Oussama Lassoued',SC/2,170,'bold 12px monospace',`rgba(200,210,240,${Math.min(t,.7)*.5})`,'center');
-  // Progress bar
-  ctx.strokeStyle=`rgba(200,210,240,${Math.min(t,.5)*.3})`;ctx.lineWidth=1;
-  ctx.strokeRect(56,210,SC-112,8);
-  fill(`rgba(200,210,240,${Math.min(t,.7)*.55})`,57,211,(SC-114)*pct,6);
-  // Loading text
-  const msgs=['Initializing...','Loading assets...','Rendering 3D...','Ready.'];
-  const mi=Math.min(Math.floor(t/0.65),3);
-  text(msgs[mi],SC/2,234,'8px monospace',`rgba(180,190,220,${Math.min(t,.6)*.4})`,'center');
-  // Blinking cursor
-  if(Math.floor(t*2)%2===0)fill(`rgba(200,210,240,.6)`,SC/2-4,246,8,2);
-  // Scanlines
-  for(let y=0;y<SH;y+=4)fill('rgba(0,0,0,.05)',0,y,SC,2);
-  scTex.needsUpdate=true;
+function scanlines(){
+  for(let y=0;y<SH;y+=4){sctx.fillStyle='rgba(0,0,0,.07)';sctx.fillRect(0,y,SC,2)}
 }
+
+function statusBar(title){
+  sctx.fillStyle='#061008';sctx.fillRect(0,0,SC,30);
+  sctx.font='bold 12px IBM Plex Mono,monospace';sctx.fillStyle='#4a8a4a';
+  sctx.textAlign='left';sctx.fillText('OL.OS',10,20);
+  sctx.textAlign='center';sctx.fillStyle='rgba(100,160,80,.6)';
+  sctx.font='10px IBM Plex Mono,monospace';sctx.fillText(title,SC/2,20);
+  // Battery
+  sctx.strokeStyle='rgba(80,160,60,.5)';sctx.lineWidth=1.5;
+  sctx.strokeRect(SC-44,8,26,14);
+  sctx.fillStyle='rgba(80,160,60,.6)';sctx.fillRect(SC-42,10,22,10);
+  sctx.textAlign='left';
+}
+
+function drawBoot(pct){
+  clr('#040c04');
+  // Nokia-style boot: checkerboard blocks fill
+  const bw=32;
+  const cols=Math.ceil(SC/bw),rows=Math.ceil(SH/bw);
+  const total=cols*rows;
+  const filled=Math.floor(pct*total);
+  for(let i=0;i<filled;i++){
+    const c=i%cols,r=Math.floor(i/cols);
+    sctx.fillStyle=`rgba(80,160,60,${.15+Math.random()*.1})`;
+    sctx.fillRect(c*bw,r*bw,bw,bw);
+  }
+  // Logo
+  sctx.textAlign='center';
+  sctx.font='bold 32px IBM Plex Mono,monospace';
+  sctx.fillStyle=`rgba(180,240,140,${Math.min(pct*3,1)})`;
+  sctx.fillText('OL.',SC/2,200);
+  sctx.font='bold 14px IBM Plex Mono,monospace';
+  sctx.fillStyle=`rgba(100,180,80,${Math.min(pct*2,.8)})`;
+  sctx.fillText('PORTFOLIO OS',SC/2,232);
+  sctx.font='10px IBM Plex Mono,monospace';
+  sctx.fillStyle=`rgba(60,140,40,${Math.min(pct*2,.5)})`;
+  sctx.fillText('Oussama Lassoued · UX/UI Designer',SC/2,260);
+  // Progress bar
+  sctx.strokeStyle='rgba(80,160,50,.5)';sctx.lineWidth=1.5;
+  sctx.strokeRect(80,310,SC-160,16);
+  sctx.fillStyle='rgba(100,200,60,.7)';
+  sctx.fillRect(81,311,(SC-162)*pct,14);
+  scanlines();
+  sTex.needsUpdate=true;
+}
+
+let selectedChoice=-1; // 0=employee, 1=freelancer
+let selectedProject=-1;
+
+function drawChoice(){
+  clr();
+  statusBar('INQUIRY');
+  // Question
+  sctx.fillStyle='rgba(150,230,100,.85)';
+  sctx.font='bold 16px IBM Plex Mono,monospace';
+  sctx.textAlign='left';
+  sctx.fillText('What are you looking',20,66);
+  sctx.fillText('for?',20,86);
+  // Horizontal line
+  sctx.fillStyle='rgba(80,160,50,.3)';sctx.fillRect(20,100,SC-40,1);
+
+  const opts=['Full-time Employee','Freelance / Project'];
+  opts.forEach((o,i)=>{
+    const y=130+i*88;
+    const isSel=selectedChoice===i;
+    if(isSel){
+      sctx.fillStyle='rgba(60,120,40,.95)';
+      sctx.fillRect(12,y-4,SC-24,52);
+    } else {
+      sctx.fillStyle='rgba(20,50,15,.6)';
+      sctx.fillRect(12,y-4,SC-24,52);
+      sctx.strokeStyle='rgba(60,120,40,.2)';sctx.lineWidth=1;
+      sctx.strokeRect(12,y-4,SC-24,52);
+    }
+    sctx.font='bold 17px IBM Plex Mono,monospace';
+    sctx.fillStyle=isSel?'#e0ffe0':'rgba(130,210,80,.7)';
+    sctx.fillText(i===0?'[ EMPLOYEE ]':'[ FREELANCE ]',24,y+12);
+    sctx.font='9px IBM Plex Mono,monospace';
+    sctx.fillStyle=isSel?'rgba(200,255,180,.7)':'rgba(80,160,50,.45)';
+    sctx.fillText(i===0?'Looking for a team member':'Single project collaboration',24,y+30);
+  });
+
+  sctx.font='9px IBM Plex Mono,monospace';
+  sctx.fillStyle='rgba(60,120,40,.45)';
+  sctx.textAlign='center';
+  sctx.fillText('TAP TO SELECT · ACCEPT TO CONFIRM',SC/2,SH-12);
+  sctx.textAlign='left';
+  scanlines();sTex.needsUpdate=true;
+}
+
+function drawProjects(){
+  clr();statusBar('MY WORK');
+  sctx.fillStyle='rgba(150,230,100,.85)';
+  sctx.font='bold 16px IBM Plex Mono,monospace';sctx.textAlign='left';
+  sctx.fillText('Which project',20,66);
+  sctx.fillText('interests you?',20,86);
+  sctx.fillStyle='rgba(80,160,50,.3)';sctx.fillRect(20,100,SC-40,1);
+
+  const projs=[
+    {n:'01',name:'Dent & Do',type:'Branding · Visual Identity',year:'2024'},
+    {n:'02',name:'Thniya',type:'UX Research · Product Design',year:'2025'},
+    {n:'03',name:'Next...',type:'Work in Progress',year:'2026'},
+  ];
+  projs.forEach((p,i)=>{
+    const y=124+i*100;
+    const isSel=selectedProject===i;
+    if(isSel){
+      sctx.fillStyle='rgba(60,120,40,.95)';sctx.fillRect(12,y-2,SC-24,80);
+    } else {
+      sctx.fillStyle='rgba(15,40,10,.6)';sctx.fillRect(12,y-2,SC-24,80);
+      sctx.strokeStyle='rgba(60,120,40,.18)';sctx.lineWidth=1;sctx.strokeRect(12,y-2,SC-24,80);
+    }
+    sctx.font='9px IBM Plex Mono,monospace';
+    sctx.fillStyle=isSel?'rgba(180,255,150,.6)':'rgba(60,120,40,.45)';
+    sctx.fillText(p.n+' — '+p.year,24,y+15);
+    sctx.font='bold 16px IBM Plex Mono,monospace';
+    sctx.fillStyle=isSel?'#e8ffe0':p.n==='03'?'rgba(80,140,50,.4)':'rgba(140,220,90,.85)';
+    sctx.fillText(p.name,24,y+36);
+    sctx.font='9px IBM Plex Mono,monospace';
+    sctx.fillStyle=isSel?'rgba(160,255,120,.55)':'rgba(60,100,40,.4)';
+    sctx.fillText(p.type,24,y+56);
+  });
+  sctx.font='9px IBM Plex Mono,monospace';sctx.fillStyle='rgba(60,120,40,.45)';
+  sctx.textAlign='center';sctx.fillText('TAP · ACCEPT TO VIEW',SC/2,SH-12);
+  sctx.textAlign='left';
+  scanlines();sTex.needsUpdate=true;
+}
+
+function drawMessages(){
+  clr('#040c04');statusBar('INBOX');
+  sctx.fillStyle='rgba(140,220,80,.7)';
+  sctx.font='bold 14px IBM Plex Mono,monospace';sctx.textAlign='left';
+  sctx.fillText('Inbox (4)',20,58);
+  sctx.fillStyle='rgba(80,160,50,.25)';sctx.fillRect(20,66,SC-40,1);
+  const msgs=[
+    {from:'Aymen Mejri',prev:'"Remarkable attention to detail..."'},
+    {from:'Sarra Ben Ali',prev:'"Incredibly thorough research..."'},
+    {from:'Khalil Tounsi',prev:'"Perfectly captured who we are..."'},
+    {from:'Rim Lahmar',prev:'"Balanced aesthetics & function..."'},
+  ];
+  msgs.forEach((m,i)=>{
+    const y=82+i*90;
+    sctx.fillStyle='rgba(15,40,10,.5)';sctx.fillRect(12,y,SC-24,78);
+    sctx.strokeStyle='rgba(60,120,40,.15)';sctx.lineWidth=1;sctx.strokeRect(12,y,SC-24,78);
+    // Unread dot
+    sctx.beginPath();sctx.arc(24,y+18,4,0,Math.PI*2);sctx.fillStyle='rgba(100,200,60,.8)';sctx.fill();
+    sctx.font='bold 12px IBM Plex Mono,monospace';sctx.fillStyle='rgba(160,240,80,.85)';
+    sctx.fillText(m.from,34,y+22);
+    sctx.font='9px IBM Plex Mono,monospace';sctx.fillStyle='rgba(80,160,50,.5)';
+    sctx.fillText('★★★★★',34,y+42);
+    sctx.fillStyle='rgba(100,180,60,.55)';
+    sctx.fillText(m.prev,24,y+62);
+  });
+  scanlines();sTex.needsUpdate=true;
+}
+
+function drawCharging(){
+  clr('#020802');
+  sctx.textAlign='center';
+  // Battery charging animation
+  const t=Date.now()/1000;
+  const charge=(Math.sin(t)+1)/2;
+  sctx.font='48px IBM Plex Mono,monospace';sctx.fillStyle=`rgba(80,200,50,${.3+charge*.3})`;
+  sctx.fillText('⚡',SC/2,200);
+  sctx.font='bold 14px IBM Plex Mono,monospace';sctx.fillStyle='rgba(100,200,60,.6)';
+  sctx.fillText('CHARGING...',SC/2,260);
+  sctx.font='10px IBM Plex Mono,monospace';sctx.fillStyle='rgba(60,140,40,.4)';
+  sctx.fillText('Thanks for visiting',SC/2,290);
+  sctx.textAlign='left';
+  scanlines();sTex.needsUpdate=true;
+}
+
+/* Back canvas */
+function drawBack(){
+  const bw=640,bh=800;
+  bctx.fillStyle='#f0ede6';bctx.fillRect(0,0,bw,bh);
+  // Sticker border
+  bctx.strokeStyle='#c8c4bc';bctx.lineWidth=2;
+  bctx.strokeRect(20,20,bw-40,bh-40);
+  // Sticker header
+  bctx.fillStyle='#1a1a1a';bctx.fillRect(20,20,bw-40,90);
+  bctx.font='bold 16px IBM Plex Mono,monospace';bctx.fillStyle='#e8e4dc';
+  bctx.textAlign='center';bctx.fillText('// PORTFOLIO DEVICE',bw/2,65);
+  bctx.textAlign='left';
+  // Photo placeholder
+  bctx.fillStyle='#d8d4cc';bctx.fillRect(36,128,220,280);
+  // Load actual photo via image
+  const img=new Image();img.crossOrigin='anonymous';
+  img.src='https://framerusercontent.com/images/FYSMS1kBSLKhRXgTERSop8xV6k.jpg';
+  img.onload=()=>{
+    bctx.save();bctx.rect(36,128,220,280);bctx.clip();
+    bctx.drawImage(img,36,128,220,280);bctx.restore();
+    backTex.needsUpdate=true;
+  };
+  // Info
+  bctx.font='bold 28px Syne,sans-serif';bctx.fillStyle='#1a1a1a';
+  bctx.fillText('Oussama',276,162);bctx.fillText('Lassoued.',276,196);
+  bctx.font='12px IBM Plex Mono,monospace';bctx.fillStyle='#666';
+  bctx.fillText('UX / UI DESIGNER',276,226);
+  bctx.fillStyle='#888';bctx.fillRect(276,236,240,1);
+  // Bio text
+  bctx.font='12px DM Sans,sans-serif';bctx.fillStyle='#444';
+  const bioLines=[
+    'Junior UX/UI Designer &','Multimedia student at ISAMM,','Tunisia.','','Google UX Design Professional','Certificate.','','Inspired by moments when','products simply make sense.'];
+  bioLines.forEach((l,i)=>bctx.fillText(l,276,260+i*20));
+  // Skills
+  bctx.font='bold 11px IBM Plex Mono,monospace';bctx.fillStyle='#333';
+  bctx.fillText('SKILLS',276,460);
+  [['Figma',.92],['UX Research',.85],['UI Design',.88]].forEach(([n,v],i)=>{
+    bctx.font='9px IBM Plex Mono,monospace';bctx.fillStyle='#666';
+    bctx.fillText(n,276,482+i*28);
+    bctx.fillStyle='#e0ddd8';bctx.fillRect(276,488+i*28,240,6);
+    bctx.fillStyle='#333';bctx.fillRect(276,488+i*28,240*v,6);
+  });
+  // Contact
+  bctx.fillStyle='#aaa';bctx.fillRect(36,430,bw-72,1);
+  bctx.font='11px IBM Plex Mono,monospace';bctx.fillStyle='#555';
+  bctx.fillText('work.oussama.lassoued@gmail.com',36,460);
+  bctx.fillText('linkedin.com/in/oussama-lassoued-in',36,480);
+  // Scroll hint
+  bctx.font='bold 11px IBM Plex Mono,monospace';bctx.fillStyle='#1a1a1a';
+  bctx.textAlign='center';
+  bctx.fillText('↓ SCROLL TO CONTINUE',bw/2,750);
+  bctx.textAlign='left';
+  // Decorative corner elements
+  ['tl','tr','bl','br'].forEach(c=>{
+    const cx=c.includes('r')?bw-36:36,cy=c.includes('b')?bh-36:36;
+    bctx.strokeStyle='#ccc';bctx.lineWidth=1.5;
+    bctx.beginPath();
+    if(c==='tl'){bctx.moveTo(cx+12,cy);bctx.lineTo(cx,cy);bctx.lineTo(cx,cy+12);}
+    if(c==='tr'){bctx.moveTo(cx-12,cy);bctx.lineTo(cx,cy);bctx.lineTo(cx,cy+12);}
+    if(c==='bl'){bctx.moveTo(cx+12,cy);bctx.lineTo(cx,cy);bctx.lineTo(cx,cy-12);}
+    if(c==='br'){bctx.moveTo(cx-12,cy);bctx.lineTo(cx,cy);bctx.lineTo(cx,cy-12);}
+    bctx.stroke();
+  });
+  backTex.needsUpdate=true;
+}
+
+/* ═══════════════════════════════════════
+   ACT SYSTEM
+═══════════════════════════════════════ */
+/* Acts:
+   0 = preloader
+   1 = HERO (phone tilted, title visible)
+   2 = CHOICE (phone upright, screen menu)
+   3 = BIO FLIP (phone flipped, bio shown)
+   4 = PROJECTS (phone spun, projects menu)
+   5 = PROJECT VIEW (phone left, computer)
+   6 = MESSAGES (phone zoom in → messages)
+   7 = CTA (charger + CTA)
+*/
+let act=0;
+let isTransitioning=false;
+const TOTAL_ACTS=8;
+
+function updateProgress(){
+  document.getElementById('act-prog-fill').style.width=((act/(TOTAL_ACTS-1))*100)+'%';
+}
+
+function showEl(id,show){
+  const el=document.getElementById(id);
+  if(!el)return;
+  if(show){
+    el.style.pointerEvents='auto';
+    gsap.to(el,{opacity:1,duration:.6,ease:'power2.out'});
+  } else {
+    el.style.pointerEvents='none';
+    gsap.to(el,{opacity:0,duration:.4,ease:'power2.in'});
+  }
+}
+
+/* ACT TRANSITIONS */
+function goAct(n){
+  if(isTransitioning||n===act) return;
+  if(n<0||n>=TOTAL_ACTS) return;
+  isTransitioning=true;
+  const from=act; act=n;
+  exitAct(from);
+  setTimeout(()=>{ enterAct(n); setTimeout(()=>isTransitioning=false,800); },300);
+  updateProgress();
+}
+
+function exitAct(n){
+  switch(n){
+    case 1:
+      gsap.to('#act1-title',{opacity:0,y:-16,duration:.4});
+      break;
+    case 2:
+      showEl('act2-hint',false);
+      break;
+    case 3:
+      showEl('act3-bio',false);
+      backMesh.visible=false;
+      break;
+    case 4:
+      break;
+    case 5:
+      showEl('act5-project',false);
+      monitorGroup.visible=false;
+      break;
+    case 6:
+      showEl('act6-msg',false);
+      break;
+    case 7:
+      showEl('act7-cta',false);
+      chargerGroup.visible=false;
+      break;
+  }
+}
+
+function enterAct(n){
+  switch(n){
+    case 1: act1_enter(); break;
+    case 2: act2_enter(); break;
+    case 3: act3_enter(); break;
+    case 4: act4_enter(); break;
+    case 5: act5_enter(); break;
+    case 6: act6_enter(); break;
+    case 7: act7_enter(); break;
+  }
+}
+
+/* ── ACT 1: HERO ── */
+function act1_enter(){
+  // Phone tilted, right side of screen
+  gsap.to(phoneGroup.position,{x:1.4,y:0,z:0,duration:1.2,ease:'power3.out'});
+  gsap.to(phoneGroup.rotation,{x:-.06,y:-.62,z:.06,duration:1.2,ease:'power3.out'});
+  gsap.to(camera.position,{x:0,y:.2,z:10,duration:1,ease:'power2.out'});
+  gsap.to('#act1-title',{opacity:1,y:0,duration:.8,delay:.4,ease:'power3.out'});
+}
+
+/* ── ACT 2: CHOICE SCREEN ── */
+function act2_enter(){
+  // Phone rights up, moves to center
+  gsap.to('#act1-title',{opacity:0,y:-16,duration:.4});
+  gsap.to(phoneGroup.position,{x:.2,y:0,z:0,duration:1,ease:'power3.out'});
+  gsap.to(phoneGroup.rotation,{x:0,y:-.08,z:0,duration:1,ease:'power3.out'});
+  gsap.to(camera.position,{x:0,y:.2,z:8.5,duration:1,ease:'power2.out'});
+  selectedChoice=-1;
+  drawChoice();
+  showEl('act2-hint',true);
+}
+
+/* ── ACT 3: BIO FLIP ── */
+function act3_enter(){
+  showEl('act2-hint',false);
+  drawBack();
+  backMesh.visible=true;
+  // Rise up
+  gsap.to(phoneGroup.position,{y:1.2,duration:.5,ease:'power2.in',onComplete:()=>{
+    // Flip Y 180°
+    gsap.to(phoneGroup.rotation,{y:Math.PI+.15,duration:.9,ease:'power3.inOut',onComplete:()=>{
+      // Settle
+      gsap.to(phoneGroup.position,{x:1.2,y:-.2,duration:.6,ease:'power3.out'});
+      gsap.to(phoneGroup.rotation,{y:Math.PI+.25,x:.05,duration:.5,ease:'power2.out'});
+      showEl('act3-bio',true);
+    }});
+  }});
+}
+
+/* ── ACT 4: PROJECTS (spin + projects menu) ── */
+function act4_enter(){
+  backMesh.visible=false;
+  showEl('act3-bio',false);
+  selectedProject=-1;
+  // Creative spin: full rotation
+  gsap.to(phoneGroup.rotation,{
+    y:Math.PI*2.5,x:Math.PI*.3,z:Math.PI*.25,
+    duration:1.4,ease:'power2.inOut',
+    onComplete:()=>{
+      gsap.to(phoneGroup.rotation,{x:-.04,y:-.08,z:0,duration:.6,ease:'elastic.out(1,.6)'});
+      gsap.to(phoneGroup.position,{x:.2,y:0,duration:.6,ease:'elastic.out(1,.6)'});
+      drawProjects();
+    }
+  });
+  gsap.to(phoneGroup.position,{x:0,y:.8,z:.5,duration:.7,ease:'power2.in'});
+  setTimeout(()=>gsap.to(phoneGroup.position,{x:.2,y:0,z:0,duration:.5,ease:'power3.out'}),1400);
+}
+
+/* ── ACT 5: PROJECT VIEW ── */
+function act5_enter(){
+  // Phone slides left
+  gsap.to(phoneGroup.position,{x:-2.8,y:0,duration:.8,ease:'power3.inOut'});
+  gsap.to(phoneGroup.rotation,{y:-.35,duration:.8,ease:'power3.inOut'});
+  // Monitor slides in
+  setTimeout(()=>{
+    monitorGroup.visible=true;
+    monitorGroup.position.set(4,0,-1);
+    gsap.to(monitorGroup.position,{x:1.2,y:0,duration:.9,ease:'power3.out'});
+    gsap.to(monitorGroup.rotation,{y:-.15,duration:.9,ease:'power3.out'});
+    // Show overlay
+    setTimeout(()=>showEl('act5-project',true),500);
+  },400);
+}
+
+/* ── ACT 6: MESSAGES ── */
+function act6_enter(){
+  monitorGroup.visible=false;
+  showEl('act5-project',false);
+  // Phone back to center
+  gsap.to(phoneGroup.position,{x:0,y:0,z:0,duration:.8,ease:'power3.out'});
+  gsap.to(phoneGroup.rotation,{x:0,y:0,z:0,duration:.8,ease:'power3.out'});
+  // Camera zooms in toward screen
+  setTimeout(()=>{
+    gsap.to(camera.position,{x:0,y:.5,z:5.5,duration:1,ease:'power2.inOut',onComplete:()=>{
+      drawMessages();
+      showEl('act6-msg',true);
+      // Stagger message items
+      [0,1,2,3].forEach(i=>{
+        gsap.to('#msg'+i,{opacity:1,y:0,duration:.5,delay:.2+i*.12,ease:'power3.out'});
+      });
+    }});
+  },500);
+}
+
+/* ── ACT 7: CTA ── */
+function act7_enter(){
+  showEl('act6-msg',false);
+  // Camera pulls back
+  gsap.to(camera.position,{x:0,y:.2,z:10,duration:.8,ease:'power2.out'});
+  // Phone slides down into charger
+  chargerGroup.visible=true;
+  chargerGroup.position.set(0,-3.5,-1);
+  gsap.to(chargerGroup.position,{y:-2.5,duration:.6,ease:'power2.out'});
+  // Phone goes into charger
+  gsap.to(phoneGroup.position,{y:-2.1,duration:.9,ease:'power2.in',delay:.2,onComplete:()=>{
+    drawCharging();
+    // Phone + charger scale down and fade
+    gsap.to(phoneGroup.scale,{x:.12,y:.12,z:.12,duration:.7,ease:'power3.in'});
+    gsap.to(chargerGroup.scale,{x:.12,y:.12,z:.12,duration:.7,ease:'power3.in'});
+    // Show CTA
+    setTimeout(()=>showEl('act7-cta',true),600);
+  }});
+}
+
+/* ═══════════════════════════════════════
+   SCREEN INTERACTIONS
+═══════════════════════════════════════ */
+const raycaster=new THREE.Raycaster();
+const mouseV=new THREE.Vector2();
+const tooltip=document.getElementById('tooltip');
+let hoveredBtn=null;
+
+canvas.style.pointerEvents='auto';
+
+canvas.addEventListener('mousemove',e=>{
+  mouseV.x=(e.clientX/innerWidth)*2-1;
+  mouseV.y=-(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouseV,camera);
+  
+  // Check screen click zones
+  const scrHit=raycaster.intersectObject(scrMesh);
+  const btnObjs=[cbMesh,accMesh,rsBtnMesh];
+  const btnHit=raycaster.intersectObjects(btnObjs);
+  
+  if(btnHit.length){
+    const lbl=btnHit[0].object.userData.label;
+    tooltip.style.left=(e.clientX+14)+'px';
+    tooltip.style.top=(e.clientY-8)+'px';
+    tooltip.textContent=lbl;tooltip.style.opacity='1';
+    document.body.classList.add('hov');hoveredBtn=btnHit[0].object;
+  } else if(scrHit.length&&(act===2||act===4)){
+    tooltip.style.left=(e.clientX+14)+'px';
+    tooltip.style.top=(e.clientY-8)+'px';
+    tooltip.textContent='Click to select';tooltip.style.opacity='1';
+    document.body.classList.add('hov');hoveredBtn='screen';
+  } else {
+    tooltip.style.opacity='0';document.body.classList.remove('hov');hoveredBtn=null;
+  }
+});
+
+canvas.addEventListener('click',e=>{
+  mouseV.x=(e.clientX/innerWidth)*2-1;
+  mouseV.y=-(e.clientY/innerHeight)*2+1;
+  raycaster.setFromCamera(mouseV,camera);
+  document.body.classList.add('click-anim');
+  setTimeout(()=>document.body.classList.remove('click-anim'),200);
+
+  // Buttons
+  const btnHit=raycaster.intersectObjects([cbMesh,accMesh,rsBtnMesh]);
+  if(btnHit.length){
+    const action=btnHit[0].object.userData.action;
+    // Press animation
+    const btn=btnHit[0].object;
+    gsap.to(btn.position,{z:btn.position.z-.04,duration:.08,yoyo:true,repeat:1,ease:'power2.in'});
+    handleBtnAction(action);
+    return;
+  }
+
+  // Screen click for menu selection
+  const scrHit=raycaster.intersectObject(scrMesh);
+  if(scrHit.length){
+    if(act===2){
+      // Determine which option was clicked based on UV
+      const uv=scrHit[0].uv;
+      const y=uv.y; // 0=bottom 1=top in three.js UV
+      const normY=1-y; // flip: 0=top 1=bottom
+      const screenY=normY*SH;
+      if(screenY>118&&screenY<210) { selectedChoice=0; drawChoice(); }
+      if(screenY>206&&screenY<298) { selectedChoice=1; drawChoice(); }
+    } else if(act===4){
+      const uv=scrHit[0].uv;
+      const normY=1-uv.y;const screenY=normY*SH;
+      if(screenY>120&&screenY<224) { selectedProject=0; drawProjects(); }
+      if(screenY>224&&screenY<328) { selectedProject=1; drawProjects(); }
+    }
+  }
+});
+
+function handleBtnAction(action){
+  if(action==='accept'){
+    if(act===2){
+      if(selectedChoice<0){selectedChoice=0;drawChoice();}
+      setTimeout(()=>goAct(3),200);
+    } else if(act===4){
+      if(selectedProject<0){selectedProject=0;drawProjects();}
+      loadProjectData(selectedProject);
+      setTimeout(()=>goAct(5),200);
+    }
+  } else if(action==='reset'){
+    if(act===2){selectedChoice=-1;drawChoice();}
+    if(act===4){selectedProject=-1;drawProjects();}
+  } else if(action==='ok'){
+    if(act===1) goAct(2);
+  }
+}
+
+/* ═══════════════════════════════════════
+   PROJECT DATA
+═══════════════════════════════════════ */
+const projects=[
+  {num:'01/02',name:'Dent & Do',type:'Branding · Visual Identity · 2024',
+   desc:'Complete brand identity for a modern dental practice — logo system, color palette, typography, and comprehensive brand guidelines.',
+   img:'https://framerusercontent.com/images/WD6Bse4lEg0oDx4rIQLWF5MDAI.png',
+   url:'https://www.behance.net/gallery/217565913/Dent-Do-Branding-Visual-Identity'},
+  {num:'02/02',name:'Thniya',type:'UX Research · Product Design · 2025',
+   desc:'End-to-end UX case study: user research, competitive analysis, wireframes, high-fidelity prototypes, and usability testing sessions.',
+   img:'https://framerusercontent.com/images/AWPP39aNnq1vUhvVh4IdsC1sDc.jpg',
+   url:'https://www.behance.net/gallery/242574129/Thniya-CASE-STATDY'},
+];
+let currentProjectIdx=0;
+
+function loadProjectData(idx){
+  const p=projects[Math.min(idx,projects.length-1)];
+  currentProjectIdx=Math.min(idx,projects.length-1);
+  document.getElementById('proj-num').textContent=p.num;
+  document.getElementById('proj-name').textContent=p.name;
+  document.getElementById('proj-type').textContent=p.type;
+  document.getElementById('proj-desc').textContent=p.desc;
+  document.getElementById('proj-img').src=p.img;
+  document.getElementById('proj-link').href=p.url;
+  document.getElementById('proj-bar-title').textContent=p.name.toUpperCase()+' — '+p.type.split('·')[p.type.split('·').length-1].trim();
+}
+
+window.showNextProject=function(){
+  currentProjectIdx=(currentProjectIdx+1)%projects.length;
+  loadProjectData(currentProjectIdx);
+};
+window.closeProject=function(){
+  goAct(6);
+};
+
+/* ═══════════════════════════════════════
+   SCROLL / WHEEL NAVIGATION
+═══════════════════════════════════════ */
+let wBuf=0, lastWheel=0;
+addEventListener('wheel',e=>{
+  if(act===0) return;
+  const now=Date.now();
+  if(now-lastWheel<500) return;
+  lastWheel=now;
+  wBuf=e.deltaY;
+  if(wBuf>30){
+    if(act<TOTAL_ACTS-1) goAct(act+1);
+  } else if(wBuf<-30){
+    if(act>1) goAct(act-1);
+  }
+},{passive:true});
+
+addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'||e.key==='PageDown') {if(act<TOTAL_ACTS-1) goAct(act+1);}
+  if(e.key==='ArrowUp'||e.key==='PageUp') {if(act>1) goAct(act-1);}
+  if(e.key==='Enter'){handleBtnAction('accept');}
+  if(e.key==='Escape'){if(act===5)goAct(6);}
+});
+
+/* ═══════════════════════════════════════
+   MOUSE PARALLAX
+═══════════════════════════════════════ */
+let tRX=0,tRY=0;
+addEventListener('mousemove',e=>{
+  if(act===3||act===5||act===6||act===7) return;
+  tRX=-(e.clientY/innerHeight-.5)*.18;
+  tRY=(e.clientX/innerWidth-.5)*.14;
+});
+
+/* ═══════════════════════════════════════
+   RENDER LOOP
+═══════════════════════════════════════ */
+const clock=new THREE.Clock();
+let bootPct=0;
 
 (function render(){
   requestAnimationFrame(render);
   const t=clock.getElapsedTime();
-  frameCount++;
 
-  // Boot screen
-  if(!bootDone){
-    drawBootScreen(t);
-    if(t>2.8){bootDone=true;drawScreen('home');}
-  } else if(frameCount%4===0){ // Refresh screen every 4 frames for contact cursor blink
-    if(currentScreen==='contact') drawContact();
+  // Parallax (only in certain acts)
+  if(act>=1&&act<=4){
+    phoneGroup.rotation.x+=(tRX-phoneGroup.rotation.x)*.04;
+    // Only add parallax Y rotation if we're not mid-transition
+    if(act===1||act===2){
+      const baseRY=act===1?-.62:-.08;
+      phoneGroup.rotation.y+=(baseRY+tRY-phoneGroup.rotation.y)*.04;
+    }
   }
 
-  // Float animation
-  phoneGroup.position.y=Math.sin(t*.45)*.06;
+  // Float
+  if(act>=1&&act<=4){
+    phoneGroup.position.y+=Math.sin(t*.45)*.0008;
+  }
 
-  // Mouse parallax
-  phoneGroup.rotation.x+=(tRX-phoneGroup.rotation.x)*.04;
-  phoneGroup.rotation.y+=(tRY-phoneGroup.rotation.y)*.04;
+  // Screen glow pulse
+  screenGlow.intensity=.7+Math.sin(t*1.1)*.1;
 
-  camera.position.x+=(camX*.3-camera.position.x)*.028;
-  camera.position.y+=(.3+camY*.2-camera.position.y)*.028;
+  // Charging screen update
+  if(act===7){drawCharging();}
 
-  // Screen light pulse
-  screenLight.intensity=.8+Math.sin(t*1.2)*.08;
-
-  // Particle drift
   pField.rotation.y=t*.003;
-
   renderer.render(scene,camera);
 })();
 
@@ -1139,41 +1375,71 @@ addEventListener('resize',()=>{
   renderer.setSize(innerWidth,innerHeight);
 });
 
-/* ═══════════════════════════════════
+/* ═══════════════════════════════════════
    PRELOADER
-═══════════════════════════════════ */
+═══════════════════════════════════════ */
 (function(){
-  const pf=document.getElementById('pf'),pn=document.getElementById('pnum'),pl=document.getElementById('plbl');
-  const lbls=['Powering on...','Booting OS...','Loading assets...','Rendering 3D...','Launching!'];
-  gsap.to('#pl1',{y:'0%',duration:.7,ease:'power4.out',delay:.1});
-  gsap.to('#pl2',{y:'0%',duration:.7,ease:'power4.out',delay:.2});
+  const pbar=document.getElementById('pbar');
+  const pn=document.getElementById('pre-n');
+  const pl=document.getElementById('pre-lbl');
+  const lbls=['Initializing...','Loading assets...','Building 3D scene...','Rendering phone...','Ready!'];
+  
+  // Animate name
+  gsap.to('#pre-name',{opacity:1,duration:.5,delay:.2});
+
+  // Boot animation on screen
+  let bootTime=0;
+  const bootInterval=setInterval(()=>{
+    bootTime+=.04;
+    drawBoot(Math.min(bootTime/3,1));
+  },40);
+
   let n=0,li=0;
   const tick=setInterval(()=>{
-    n=Math.min(n+Math.floor(Math.random()*5)+2,100);
-    pf.style.width=n+'%';
-    pn.textContent=String(n).padStart(3,'0');
+    n=Math.min(n+Math.floor(Math.random()*4)+2,100);
+    pbar.style.width=n+'%';
+    pn.textContent=n+'%';
     const ni=Math.floor(n/22);
     if(ni!==li&&ni<lbls.length){li=ni;pl.textContent=lbls[li];}
-    if(n>=100){clearInterval(tick);setTimeout(enterSite,450);}
-  },22);
+    if(n>=100){
+      clearInterval(tick);clearInterval(bootInterval);
+      setTimeout(enterSite,600);
+    }
+  },28);
 })();
 
 function enterSite(){
+  // Dismiss preloader
   gsap.to('#pre',{
-    clipPath:'inset(0 0 100% 0)',duration:1.3,ease:'power4.inOut',
+    clipPath:'inset(0 0 100% 0)',duration:1.4,ease:'power4.inOut',
     onComplete:()=>document.getElementById('pre').style.display='none'
   });
-  gsap.to('#topbar',{opacity:1,y:0,duration:.8,delay:.6});
-  gsap.to('#hint',{opacity:1,delay:1.2});
+  gsap.to('#nav',{opacity:1,y:0,duration:.8,delay:.5});
+  gsap.to('#act-progress',{opacity:1,duration:.6,delay:.8});
+  drawBoot(1);
+  // Set initial phone position for act 1
+  phoneGroup.position.set(3,0,0);phoneGroup.rotation.set(-.06,-.9,.06);
+  phoneGroup.scale.set(1,1,1);
+  setTimeout(()=>{
+    act=1;
+    gsap.to(phoneGroup.position,{x:1.4,duration:1.2,ease:'power3.out'});
+    gsap.to(phoneGroup.rotation,{y:-.62,duration:1.2,ease:'power3.out'});
+    setTimeout(()=>{
+      gsap.to('#act1-title',{opacity:1,y:0,duration:.9,ease:'power3.out'});
+    },600);
+    updateProgress();
+  },700);
 }
 
-/* ── MAGNETIC buttons in topbar ── */
-document.querySelectorAll('.tb-links a').forEach(btn=>{
+/* ═══════════════════════════════════════
+   MAGNETIC BUTTONS (HTML)
+═══════════════════════════════════════ */
+document.querySelectorAll('.cta-rocket-btn,.project-open,.project-another,.project-close-btn').forEach(btn=>{
   btn.addEventListener('mousemove',e=>{
     const r=btn.getBoundingClientRect();
-    gsap.to(btn,{x:(e.clientX-r.left-r.width/2)*.25,y:(e.clientY-r.top-r.height/2)*.25,duration:.4,ease:'power2.out'});
+    gsap.to(btn,{x:(e.clientX-r.left-r.width/2)*.2,y:(e.clientY-r.top-r.height/2)*.2,duration:.4,ease:'power2.out'});
   });
-  btn.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.6,ease:'elastic.out(1,.5)'}));
+  btn.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.5)'}));
   btn.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
   btn.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
 });
